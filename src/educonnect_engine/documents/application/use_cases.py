@@ -1,0 +1,1 @@
+"""Documents use-case scaffolds."""

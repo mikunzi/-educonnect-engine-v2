@@ -1,0 +1,1 @@
+"""Accounting use-case scaffolds."""

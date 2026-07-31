@@ -1,0 +1,1 @@
+"""Companies use-case scaffolds."""

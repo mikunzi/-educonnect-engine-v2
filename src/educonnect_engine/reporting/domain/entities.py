@@ -1,0 +1,1 @@
+"""Reporting entities scaffold."""

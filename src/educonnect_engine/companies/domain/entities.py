@@ -1,0 +1,1 @@
+"""Companies entities scaffold."""

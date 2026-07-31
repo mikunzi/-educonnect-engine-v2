@@ -1,0 +1,1 @@
+"""Pedagogy infrastructure adapters scaffold."""
