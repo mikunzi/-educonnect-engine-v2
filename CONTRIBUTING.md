@@ -51,4 +51,9 @@ make check
 
 ## Scope Reminder
 
-This repository is currently scaffold-only. Do not add business logic unless explicitly planned.
+This repository contains an implemented accounting core through Phase 6.2.
+All new business logic must follow the planned roadmap and preserve existing accounting invariants.
+
+Current next planned step:
+
+- Phase 6.3 - Closing Entries & Opening Entries

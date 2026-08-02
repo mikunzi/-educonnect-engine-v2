@@ -4,7 +4,7 @@ This document defines expected behavior for human and AI contributors.
 
 ## Purpose
 
-Keep the repository production-ready, modular, and architecture-safe while implementation is staged.
+Keep the repository production-ready, modular, and architecture-safe while phased implementation progresses.
 
 ## Operating Rules
 
@@ -12,7 +12,7 @@ Keep the repository production-ready, modular, and architecture-safe while imple
 - Follow SOLID principles.
 - Preserve DDD bounded contexts.
 - Require full type annotations for new Python code.
-- Avoid introducing business logic in scaffold-only phases.
+- Implement business logic only within approved roadmap phases.
 
 ## Code Generation Rules
 

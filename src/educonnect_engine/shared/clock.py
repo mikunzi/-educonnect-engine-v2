@@ -10,10 +10,10 @@ class Clock:
 
     tz: timezone = UTC
 
-    def now(self) -> datetime:
-        """Return current timezone-aware datetime."""
-        return datetime.now(tz=self.tz)
+    def now_utc(self) -> datetime:
+        """Return current timezone-aware UTC datetime."""
+        return datetime.now(tz=UTC)
 
     def today(self) -> date:
         """Return current date in configured timezone."""
-        return self.now().date()
+        return self.now_utc().date()

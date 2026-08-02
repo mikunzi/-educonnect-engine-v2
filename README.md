@@ -1,9 +1,9 @@
 # EduConnect Engine v2
 
-Production-ready Python 3.14 repository skeleton for a modular and scalable engine.
+Python 3.14 codebase for a modular accounting core using Clean Architecture + DDD.
 
-This repository intentionally excludes business implementation and contains only architecture,
-tooling, and developer workflow foundations.
+This repository is no longer scaffold-only: the accounting core is implemented through Phase 6.2
+and stabilized as an architecture milestone before Phase 6.3.
 
 ## Stack
 
@@ -78,7 +78,52 @@ make install-dev
 make check
 ```
 
-## Important Note
+## Current Accounting Milestone (Post-Phase 6.2)
 
-No business rules, workflows, or external integrations have been implemented yet.
-All modules are scaffolds to support iterative delivery.
+Completed phases:
+
+- Shared Kernel
+- JournalEntry / JournalLine
+- RecordJournalEntry
+- PostJournalEntry
+- ReverseJournalEntry
+- Ledger Projection
+- Trial Balance Projection
+- Balance Sheet Projection
+- Income Statement Projection
+- Financial Statements Projection
+- Accounting Period Lifecycle
+- Fiscal Year Closing
+
+Next phase:
+
+- Phase 6.3 - Closing Entries & Opening Entries
+
+## Accounting Processing Chain
+
+- Record a balanced JournalEntry (RECORDED)
+- Post entry when period is OPEN (RECORDED -> POSTED)
+- Reverse posted entry through traceable correction flow
+- Project deterministic Ledger from POSTED entries
+- Project Trial Balance from Ledger
+- Project Balance Sheet and Income Statement
+- Assemble Financial Statements with consistency checks
+- Manage period lifecycle (OPEN -> CLOSED -> LOCKED)
+- Close fiscal year (OPEN -> CLOSED) with explicit prerequisites
+
+## Major Invariants
+
+- Double-entry balance enforced for journal entries
+- Single-currency journal entry lines
+- UTC timezone enforcement for posting/closing timestamps
+- Immutable value objects and aggregates (`dataclass(frozen=True, slots=True)`)
+- Idempotency on command use cases
+- Optimistic version checks on lifecycle transitions
+- Financial statements coherence between balance sheet and income statement
+
+## Quality Snapshot (2026-08-02)
+
+- Ruff: pass
+- MyPy: pass (`151` source files)
+- Pytest: pass (`379` tests)
+- Global coverage: `97%`
