@@ -26,7 +26,7 @@ def test_journal_code_is_frozen_and_has_slots() -> None:
     code = JournalCode(value="GEN_01")
 
     with pytest.raises(FrozenInstanceError):
-        code.value = "SALES"
+        type(code).__setattr__(code, "value", "SALES")
 
     assert not hasattr(code, "__dict__")
 

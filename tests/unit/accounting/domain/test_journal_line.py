@@ -87,6 +87,6 @@ def test_journal_line_is_frozen_and_has_slots() -> None:
     )
 
     with pytest.raises(FrozenInstanceError):
-        line.description = "updated"
+        type(line).__setattr__(line, "description", "updated")
 
     assert not hasattr(line, "__dict__")

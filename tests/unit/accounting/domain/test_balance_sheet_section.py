@@ -50,9 +50,7 @@ def test_balance_sheet_section_rejects_line_classification_mismatch() -> None:
         BalanceSheetSection(
             classification=AccountClassification.ASSET,
             currency=Currency(code="CHF"),
-            lines=(
-                _line("2000", AccountClassification.LIABILITY, DebitCreditSide.CREDIT, "5.00"),
-            ),
+            lines=(_line("2000", AccountClassification.LIABILITY, DebitCreditSide.CREDIT, "5.00"),),
         )
 
 
@@ -128,9 +126,7 @@ def test_balance_sheet_section_asset_total_side_credit_when_negative() -> None:
     section = BalanceSheetSection(
         classification=AccountClassification.ASSET,
         currency=Currency(code="CHF"),
-        lines=(
-            _line("1000", AccountClassification.ASSET, DebitCreditSide.CREDIT, "9.00"),
-        ),
+        lines=(_line("1000", AccountClassification.ASSET, DebitCreditSide.CREDIT, "9.00"),),
     )
 
     assert section.total_side() is DebitCreditSide.CREDIT
@@ -141,9 +137,7 @@ def test_balance_sheet_section_liability_total_side_debit_when_negative() -> Non
     section = BalanceSheetSection(
         classification=AccountClassification.LIABILITY,
         currency=Currency(code="CHF"),
-        lines=(
-            _line("2000", AccountClassification.LIABILITY, DebitCreditSide.DEBIT, "9.00"),
-        ),
+        lines=(_line("2000", AccountClassification.LIABILITY, DebitCreditSide.DEBIT, "9.00"),),
     )
 
     assert section.total_side() is DebitCreditSide.DEBIT
@@ -154,9 +148,7 @@ def test_balance_sheet_section_total_side_none_when_zero() -> None:
     section = BalanceSheetSection(
         classification=AccountClassification.ASSET,
         currency=Currency(code="CHF"),
-        lines=(
-            _line("1000", AccountClassification.ASSET, None, "0"),
-        ),
+        lines=(_line("1000", AccountClassification.ASSET, None, "0"),),
     )
 
     assert section.total_side() is None

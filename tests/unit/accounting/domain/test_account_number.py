@@ -31,6 +31,6 @@ def test_account_number_is_frozen_and_has_slots() -> None:
     number = AccountNumber(value="1000")
 
     with pytest.raises(FrozenInstanceError):
-        number.value = "1020"
+        type(number).__setattr__(number, "value", "1020")
 
     assert not hasattr(number, "__dict__")

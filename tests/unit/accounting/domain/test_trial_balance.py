@@ -131,15 +131,11 @@ def test_trial_balance_rejects_unbalanced_totals() -> None:
 def test_trial_balance_can_be_built_from_ledger_lines() -> None:
     account_1000 = _ledger_account(
         "1000",
-        (
-            _ledger_line("1000", DebitCreditSide.DEBIT, "10.00", 0, "JE-001"),
-        ),
+        (_ledger_line("1000", DebitCreditSide.DEBIT, "10.00", 0, "JE-001"),),
     )
     account_2000 = _ledger_account(
         "2000",
-        (
-            _ledger_line("2000", DebitCreditSide.CREDIT, "10.00", 1, "JE-001"),
-        ),
+        (_ledger_line("2000", DebitCreditSide.CREDIT, "10.00", 1, "JE-001"),),
     )
     ledger = Ledger(scope=_scope(), accounts=(account_1000, account_2000))
 

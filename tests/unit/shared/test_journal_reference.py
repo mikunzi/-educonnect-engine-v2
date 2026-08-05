@@ -21,7 +21,7 @@ def test_journal_reference_is_frozen_and_has_slots() -> None:
     reference = JournalReference(value="INV-2026-0001")
 
     with pytest.raises(FrozenInstanceError):
-        reference.value = "INV-2026-0002"
+        type(reference).__setattr__(reference, "value", "INV-2026-0002")
 
     assert not hasattr(reference, "__dict__")
 

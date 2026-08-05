@@ -77,9 +77,7 @@ def _build_valid_components() -> tuple[BalanceSheet, IncomeStatement]:
         assets=BalanceSheetSection(
             classification=AccountClassification.ASSET,
             currency=Currency(code="CHF"),
-            lines=(
-                _bs_line("1000", AccountClassification.ASSET, DebitCreditSide.DEBIT, "100.00"),
-            ),
+            lines=(_bs_line("1000", AccountClassification.ASSET, DebitCreditSide.DEBIT, "100.00"),),
         ),
         liabilities=BalanceSheetSection(
             classification=AccountClassification.LIABILITY,

@@ -30,6 +30,10 @@ def test_closing_timestamp_is_frozen_and_has_slots() -> None:
     timestamp = ClosingTimestamp(value=datetime(2026, 12, 31, 23, 59, tzinfo=UTC))
 
     with pytest.raises(FrozenInstanceError):
-        timestamp.value = datetime(2027, 1, 1, 0, 0, tzinfo=UTC)
+        type(timestamp).__setattr__(
+            timestamp,
+            "value",
+            datetime(2027, 1, 1, 0, 0, tzinfo=UTC),
+        )
 
     assert not hasattr(timestamp, "__dict__")

@@ -101,6 +101,6 @@ def test_trial_balance_line_is_frozen_and_uses_slots() -> None:
     )
 
     with pytest.raises(FrozenInstanceError):
-        line.currency = Currency(code="EUR")
+        type(line).__setattr__(line, "currency", Currency(code="EUR"))
 
     assert not hasattr(line, "__dict__")

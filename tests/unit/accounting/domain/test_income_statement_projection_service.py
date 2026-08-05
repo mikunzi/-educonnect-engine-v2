@@ -155,9 +155,7 @@ def test_projection_excludes_non_income_statement_classifications() -> None:
 def test_projection_rejects_unclassified_account() -> None:
     trial_balance = TrialBalance(
         scope=_scope(),
-        lines=(
-            _tb_line("1000", "10.00", "10.00"),
-        ),
+        lines=(_tb_line("1000", "10.00", "10.00"),),
     )
 
     with pytest.raises(UnclassifiedIncomeStatementAccountError):

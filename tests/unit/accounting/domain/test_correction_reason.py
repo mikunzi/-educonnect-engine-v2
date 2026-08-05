@@ -32,6 +32,6 @@ def test_correction_reason_is_frozen_and_has_slots() -> None:
     reason = CorrectionReason(value="Manual correction")
 
     with pytest.raises(FrozenInstanceError):
-        reason.value = "Other"
+        type(reason).__setattr__(reason, "value", "Other")
 
     assert not hasattr(reason, "__dict__")

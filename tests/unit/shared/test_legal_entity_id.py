@@ -21,7 +21,7 @@ def test_legal_entity_id_is_frozen_and_has_slots() -> None:
     identifier = LegalEntityId(value="entity-01")
 
     with pytest.raises(FrozenInstanceError):
-        identifier.value = "entity-02"
+        type(identifier).__setattr__(identifier, "value", "entity-02")
 
     assert not hasattr(identifier, "__dict__")
 
