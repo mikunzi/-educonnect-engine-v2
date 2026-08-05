@@ -1,5 +1,6 @@
 """Unit tests for PostJournalEntry use case."""
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
@@ -54,6 +55,14 @@ class _FakeJournalEntryRepository(JournalEntryRepository):
         self.save_calls.append((entry, expected_version))
         self.entries[entry.id] = entry
 
+    def save_reversal(
+        self,
+        reversal_entry: JournalEntry,
+        original_entry_id: JournalEntryId,
+        expected_original_version: int,
+    ) -> None:
+        _ = (reversal_entry, original_entry_id, expected_original_version)
+
 
 @dataclass
 class _FakeAccountingPeriodRepository(AccountingPeriodRepository):
@@ -85,7 +94,7 @@ class _FakeUnitOfWork(UnitOfWork):
     entered: int = 0
 
     @contextmanager
-    def transaction(self):
+    def transaction(self) -> Iterator[None]:
         self.entered += 1
         yield
 

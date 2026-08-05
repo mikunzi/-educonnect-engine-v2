@@ -119,6 +119,6 @@ def test_fiscal_year_closing_is_frozen_and_has_slots() -> None:
     closing = _open_closing()
 
     with pytest.raises(FrozenInstanceError):
-        closing.version = 1
+        type(closing).__setattr__(closing, "version", 1)
 
     assert not hasattr(closing, "__dict__")

@@ -50,9 +50,7 @@ def test_income_statement_section_rejects_line_classification_mismatch() -> None
         IncomeStatementSection(
             classification=AccountClassification.REVENUE,
             currency=Currency(code="CHF"),
-            lines=(
-                _line("5000", AccountClassification.EXPENSE, DebitCreditSide.DEBIT, "1.00"),
-            ),
+            lines=(_line("5000", AccountClassification.EXPENSE, DebitCreditSide.DEBIT, "1.00"),),
         )
 
 
@@ -122,9 +120,7 @@ def test_income_statement_section_total_side_none_when_zero() -> None:
     section = IncomeStatementSection(
         classification=AccountClassification.REVENUE,
         currency=Currency(code="CHF"),
-        lines=(
-            _line("4000", AccountClassification.REVENUE, None, "0"),
-        ),
+        lines=(_line("4000", AccountClassification.REVENUE, None, "0"),),
     )
 
     assert section.total_side() is None
@@ -135,9 +131,7 @@ def test_income_statement_section_revenue_total_side_debit_when_negative() -> No
     section = IncomeStatementSection(
         classification=AccountClassification.REVENUE,
         currency=Currency(code="CHF"),
-        lines=(
-            _line("4000", AccountClassification.REVENUE, DebitCreditSide.DEBIT, "9.00"),
-        ),
+        lines=(_line("4000", AccountClassification.REVENUE, DebitCreditSide.DEBIT, "9.00"),),
     )
 
     assert section.total_side() is DebitCreditSide.DEBIT
@@ -148,9 +142,7 @@ def test_income_statement_section_expense_total_side_credit_when_negative() -> N
     section = IncomeStatementSection(
         classification=AccountClassification.EXPENSE,
         currency=Currency(code="CHF"),
-        lines=(
-            _line("5000", AccountClassification.EXPENSE, DebitCreditSide.CREDIT, "9.00"),
-        ),
+        lines=(_line("5000", AccountClassification.EXPENSE, DebitCreditSide.CREDIT, "9.00"),),
     )
 
     assert section.total_side() is DebitCreditSide.CREDIT

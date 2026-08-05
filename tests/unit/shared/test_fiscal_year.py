@@ -26,7 +26,7 @@ def test_fiscal_year_is_frozen_and_has_slots() -> None:
     year = FiscalYear(value=2026)
 
     with pytest.raises(FrozenInstanceError):
-        year.value = 2027
+        type(year).__setattr__(year, "value", 2027)
 
     assert not hasattr(year, "__dict__")
 

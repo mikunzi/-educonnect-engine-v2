@@ -24,6 +24,6 @@ def test_fiscal_year_closing_id_is_frozen_and_has_slots() -> None:
     closing_id = FiscalYearClosingId(value="FYC-2026")
 
     with pytest.raises(FrozenInstanceError):
-        closing_id.value = "FYC-2027"
+        type(closing_id).__setattr__(closing_id, "value", "FYC-2027")
 
     assert not hasattr(closing_id, "__dict__")

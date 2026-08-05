@@ -24,6 +24,6 @@ def test_accounting_period_id_is_frozen_and_has_slots() -> None:
     period_id = AccountingPeriodId(value="PER-2026-01")
 
     with pytest.raises(FrozenInstanceError):
-        period_id.value = "PER-2026-02"
+        type(period_id).__setattr__(period_id, "value", "PER-2026-02")
 
     assert not hasattr(period_id, "__dict__")

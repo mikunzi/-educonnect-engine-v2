@@ -1,5 +1,6 @@
 """Unit tests for CloseFiscalYear use case."""
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -107,7 +108,7 @@ class _FakeUnitOfWork(UnitOfWork):
     entered: int = 0
 
     @contextmanager
-    def transaction(self):
+    def transaction(self) -> Iterator[None]:
         self.entered += 1
         yield
 

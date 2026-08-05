@@ -1,5 +1,6 @@
 """Unit tests for CloseAccountingPeriod use case."""
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date
@@ -84,7 +85,7 @@ class _FakeIdempotencyRepository(IdempotencyRepository[CloseAccountingPeriodResu
 @dataclass
 class _FakeUnitOfWork(UnitOfWork):
     @contextmanager
-    def transaction(self):
+    def transaction(self) -> Iterator[None]:
         yield
 
 

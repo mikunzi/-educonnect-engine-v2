@@ -30,6 +30,21 @@ class _InMemoryJournalEntryRepository(JournalEntryRepository):
     def add(self, entry: JournalEntry) -> None:
         self.added_entries.append(entry)
 
+    def get_by_id(self, entry_id: JournalEntryId) -> JournalEntry | None:
+        _ = entry_id
+        return None
+
+    def save_posted(self, entry: JournalEntry, expected_version: int) -> None:
+        _ = (entry, expected_version)
+
+    def save_reversal(
+        self,
+        reversal_entry: JournalEntry,
+        original_entry_id: JournalEntryId,
+        expected_original_version: int,
+    ) -> None:
+        _ = (reversal_entry, original_entry_id, expected_original_version)
+
 
 def _line(side: DebitCreditSide, amount: str) -> JournalLine:
     return JournalLine(

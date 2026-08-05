@@ -38,7 +38,7 @@ def test_accounting_period_is_frozen_and_has_slots() -> None:
     period = AccountingPeriod(start_date=date(2026, 1, 1), end_date=date(2026, 12, 31))
 
     with pytest.raises(FrozenInstanceError):
-        period.end_date = date(2027, 1, 1)
+        type(period).__setattr__(period, "end_date", date(2027, 1, 1))
 
     assert not hasattr(period, "__dict__")
 

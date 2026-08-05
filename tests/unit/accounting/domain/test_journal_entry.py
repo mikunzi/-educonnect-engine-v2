@@ -254,6 +254,6 @@ def test_journal_entry_is_frozen_and_has_slots() -> None:
     )
 
     with pytest.raises(FrozenInstanceError):
-        entry.posted_at = None
+        type(entry).__setattr__(entry, "posted_at", None)
 
     assert not hasattr(entry, "__dict__")

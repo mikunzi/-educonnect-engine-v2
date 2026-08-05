@@ -177,6 +177,6 @@ def test_accounting_period_is_frozen_and_has_slots() -> None:
     period = _period()
 
     with pytest.raises(FrozenInstanceError):
-        period.version = 1
+        type(period).__setattr__(period, "version", 1)
 
     assert not hasattr(period, "__dict__")

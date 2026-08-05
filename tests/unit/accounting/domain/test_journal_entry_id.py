@@ -28,6 +28,6 @@ def test_journal_entry_id_is_frozen_and_has_slots() -> None:
     identifier = JournalEntryId(value="JE-001")
 
     with pytest.raises(FrozenInstanceError):
-        identifier.value = "JE-002"
+        type(identifier).__setattr__(identifier, "value", "JE-002")
 
     assert not hasattr(identifier, "__dict__")

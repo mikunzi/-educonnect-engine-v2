@@ -37,6 +37,6 @@ def test_idempotency_key_is_frozen_and_has_slots() -> None:
     key = IdempotencyKey(value="POST-001")
 
     with pytest.raises(FrozenInstanceError):
-        key.value = "POST-002"
+        type(key).__setattr__(key, "value", "POST-002")
 
     assert not hasattr(key, "__dict__")

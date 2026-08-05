@@ -16,6 +16,9 @@ from .fiscal_year_closing_id import FiscalYearClosingId
 from .idempotency_key import IdempotencyKey
 from .journal_entry import JournalEntry
 from .journal_entry_id import JournalEntryId
+from .year_end_snapshot import YearEndSnapshot
+from .year_end_snapshot_id import YearEndSnapshotId
+from .year_end_snapshot_source import YearEndSnapshotSource
 
 _ResultT = TypeVar("_ResultT")
 
@@ -121,6 +124,59 @@ class FiscalYearClosingPrerequisiteRepository(Protocol):
         fiscal_year: FiscalYear,
     ) -> bool:
         """Return whether financial statements are coherent and balanced for scope."""
+
+
+class YearEndSnapshotSourceRepository(Protocol):
+    """Read-side contract for one coherent year-end projection revision."""
+
+    def get_consistent_source(
+        self,
+        legal_entity_id: LegalEntityId,
+        fiscal_year: FiscalYear,
+    ) -> YearEndSnapshotSource | None:
+        """Load trial balance and financial statements from one source revision."""
+
+
+class YearEndSnapshotRepository(Protocol):
+    """Repository contract for immutable year-end snapshots."""
+
+    def get_by_id(self, snapshot_id: YearEndSnapshotId) -> YearEndSnapshot | None:
+        """Load a snapshot by its identifier."""
+
+    def get_by_scope(
+        self,
+        legal_entity_id: LegalEntityId,
+        fiscal_year: FiscalYear,
+    ) -> YearEndSnapshot | None:
+        """Load the unique snapshot for an entity and fiscal year."""
+
+    def add(self, snapshot: YearEndSnapshot, expected_source_version: int) -> None:
+        """Persist a new snapshot if its source revision is still current."""
+
+
+class YearEndSnapshotPrerequisiteRepository(Protocol):
+    """Read-side contract exposing year-end snapshot prerequisites."""
+
+    def has_recorded_journal_entries(
+        self,
+        legal_entity_id: LegalEntityId,
+        fiscal_year: FiscalYear,
+    ) -> bool:
+        """Return whether unresolved RECORDED journal entries exist."""
+
+    def has_posting_or_reversal_in_progress(
+        self,
+        legal_entity_id: LegalEntityId,
+        fiscal_year: FiscalYear,
+    ) -> bool:
+        """Return whether posting or reversal operations are in progress."""
+
+    def is_fiscal_year_closed(
+        self,
+        legal_entity_id: LegalEntityId,
+        fiscal_year: FiscalYear,
+    ) -> bool:
+        """Return whether the fiscal year is already closed."""
 
 
 class IdempotencyRepository(Protocol[_ResultT]):

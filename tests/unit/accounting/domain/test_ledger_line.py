@@ -75,6 +75,6 @@ def test_ledger_line_is_frozen_and_uses_slots() -> None:
     line = _line(posted_at=datetime(2026, 2, 1, 10, 0, tzinfo=UTC))
 
     with pytest.raises(FrozenInstanceError):
-        line.description = "x"
+        type(line).__setattr__(line, "description", "x")
 
     assert not hasattr(line, "__dict__")

@@ -1,5 +1,6 @@
 """Unit tests for ReverseJournalEntry use case."""
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -97,7 +98,7 @@ class _FakeUnitOfWork(UnitOfWork):
     entered: int = 0
 
     @contextmanager
-    def transaction(self):
+    def transaction(self) -> Iterator[None]:
         self.entered += 1
         yield
 

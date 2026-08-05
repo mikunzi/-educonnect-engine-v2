@@ -30,6 +30,6 @@ def test_ledger_scope_is_frozen_and_uses_slots() -> None:
     )
 
     with pytest.raises(FrozenInstanceError):
-        scope.currency = Currency(code="EUR")
+        type(scope).__setattr__(scope, "currency", Currency(code="EUR"))
 
     assert not hasattr(scope, "__dict__")

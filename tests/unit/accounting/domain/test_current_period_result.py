@@ -90,6 +90,6 @@ def test_current_period_result_is_frozen_and_has_slots() -> None:
     )
 
     with pytest.raises(FrozenInstanceError):
-        result.currency = Currency(code="EUR")
+        type(result).__setattr__(result, "currency", Currency(code="EUR"))
 
     assert not hasattr(result, "__dict__")
