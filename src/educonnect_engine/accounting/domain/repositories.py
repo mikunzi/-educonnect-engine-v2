@@ -9,6 +9,8 @@ from typing import Protocol, TypeVar
 from educonnect_engine.shared.value_objects.fiscal_year import FiscalYear
 from educonnect_engine.shared.value_objects.legal_entity_id import LegalEntityId
 
+from .account import Account
+from .account_number import AccountNumber
 from .accounting_period import AccountingPeriod
 from .accounting_period_id import AccountingPeriodId
 from .fiscal_year_closing import FiscalYearClosing
@@ -22,6 +24,16 @@ from .year_end_snapshot_id import YearEndSnapshotId
 from .year_end_snapshot_source import YearEndSnapshotSource
 
 _ResultT = TypeVar("_ResultT")
+
+
+class AccountRepository(Protocol):
+    """Repository contract for account persistence."""
+
+    def add(self, account: Account) -> None:
+        """Persist a newly created account."""
+
+    def get_by_number(self, account_number: AccountNumber) -> Account | None:
+        """Load an account by its functional account number."""
 
 
 class JournalEntryRepository(Protocol):

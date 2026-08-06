@@ -1,5 +1,7 @@
 """Accounting domain layer."""
 
+from .account import Account
+from .account_category import AccountCategory
 from .account_classification import AccountClassification
 from .account_number import AccountNumber
 from .accounting_period import (
@@ -80,6 +82,7 @@ from .opening_entry import (
 )
 from .opening_entry_status import OpeningEntryStatus
 from .repositories import (
+    AccountRepository,
     OpeningEntryRepository,
     YearEndSnapshotPrerequisiteRepository,
     YearEndSnapshotRepository,
@@ -105,8 +108,11 @@ from .year_end_snapshot_id import YearEndSnapshotId
 from .year_end_snapshot_source import YearEndSnapshotSource
 
 __all__ = [
+    "Account",
+    "AccountCategory",
     "AccountClassification",
     "AccountNumber",
+    "AccountRepository",
     "AccountingPeriod",
     "AccountingPeriodDateFiscalYearMismatchError",
     "AccountingPeriodId",
