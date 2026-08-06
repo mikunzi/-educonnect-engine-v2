@@ -4,14 +4,6 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import pytest
-from educonnect_engine.accounting.domain.generate_opening_entries_service import (
-    EmptyOpeningEntryError,
-    GenerateOpeningEntriesService,
-    OpeningEntryRetainedEarningsAccountConflictError,
-    OpeningEntryTargetFiscalYearError,
-)
-from educonnect_engine.accounting.domain.opening_entry import OpeningEntry
-from educonnect_engine.accounting.domain.opening_entry_status import OpeningEntryStatus
 
 from educonnect_engine.accounting.domain.account_classification import AccountClassification
 from educonnect_engine.accounting.domain.account_number import AccountNumber
@@ -21,11 +13,19 @@ from educonnect_engine.accounting.domain.balance_sheet_section import BalanceShe
 from educonnect_engine.accounting.domain.current_period_result import CurrentPeriodResult
 from educonnect_engine.accounting.domain.debit_credit_side import DebitCreditSide
 from educonnect_engine.accounting.domain.financial_statements import FinancialStatements
+from educonnect_engine.accounting.domain.generate_opening_entries_service import (
+    EmptyOpeningEntryError,
+    GenerateOpeningEntriesService,
+    OpeningEntryRetainedEarningsAccountConflictError,
+    OpeningEntryTargetFiscalYearError,
+)
 from educonnect_engine.accounting.domain.income_statement import IncomeStatement
 from educonnect_engine.accounting.domain.income_statement_line import IncomeStatementLine
 from educonnect_engine.accounting.domain.income_statement_section import IncomeStatementSection
 from educonnect_engine.accounting.domain.journal_entry_id import JournalEntryId
 from educonnect_engine.accounting.domain.ledger_scope import LedgerScope
+from educonnect_engine.accounting.domain.opening_entry import OpeningEntry
+from educonnect_engine.accounting.domain.opening_entry_status import OpeningEntryStatus
 from educonnect_engine.accounting.domain.trial_balance import TrialBalance
 from educonnect_engine.accounting.domain.trial_balance_line import TrialBalanceLine
 from educonnect_engine.accounting.domain.year_end_snapshot import YearEndSnapshot

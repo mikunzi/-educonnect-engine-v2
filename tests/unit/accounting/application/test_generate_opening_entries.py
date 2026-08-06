@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import cast
 
 import pytest
+
 from educonnect_engine.accounting.application.generate_opening_entries import (
     GenerateOpeningEntries,
     GenerateOpeningEntriesAlreadyExistsError,
@@ -18,12 +19,6 @@ from educonnect_engine.accounting.application.generate_opening_entries import (
     OpeningEntriesTargetPeriodNotOpenError,
     YearEndSnapshotNotFoundError,
 )
-from educonnect_engine.accounting.domain.generate_opening_entries_service import (
-    GenerateOpeningEntriesService,
-)
-from educonnect_engine.accounting.domain.opening_entry import OpeningEntry
-from educonnect_engine.accounting.domain.opening_entry_status import OpeningEntryStatus
-
 from educonnect_engine.accounting.domain.account_classification import AccountClassification
 from educonnect_engine.accounting.domain.account_number import AccountNumber
 from educonnect_engine.accounting.domain.balance_sheet import BalanceSheet
@@ -33,6 +28,9 @@ from educonnect_engine.accounting.domain.debit_credit_side import DebitCreditSid
 from educonnect_engine.accounting.domain.financial_statements import FinancialStatements
 from educonnect_engine.accounting.domain.fiscal_year_closing import FiscalYearClosing
 from educonnect_engine.accounting.domain.fiscal_year_closing_id import FiscalYearClosingId
+from educonnect_engine.accounting.domain.generate_opening_entries_service import (
+    GenerateOpeningEntriesService,
+)
 from educonnect_engine.accounting.domain.idempotency_key import IdempotencyKey
 from educonnect_engine.accounting.domain.income_statement import IncomeStatement
 from educonnect_engine.accounting.domain.income_statement_section import IncomeStatementSection
@@ -40,6 +38,8 @@ from educonnect_engine.accounting.domain.journal_entry import JournalEntry
 from educonnect_engine.accounting.domain.journal_entry_id import JournalEntryId
 from educonnect_engine.accounting.domain.journal_line import JournalLine
 from educonnect_engine.accounting.domain.ledger_scope import LedgerScope
+from educonnect_engine.accounting.domain.opening_entry import OpeningEntry
+from educonnect_engine.accounting.domain.opening_entry_status import OpeningEntryStatus
 from educonnect_engine.accounting.domain.repositories import (
     AccountingPeriodRepository,
     FiscalYearClosingRepository,
@@ -265,8 +265,7 @@ def _use_case(
             _snapshot() if snapshot_available else None,
         ),
         opening_entry_repository=opening_repository or _FakeOpeningEntryRepository(added=[]),
-        fiscal_year_closing_repository=closing_repository
-        or _FakeFiscalYearClosingRepository(),
+        fiscal_year_closing_repository=closing_repository or _FakeFiscalYearClosingRepository(),
         accounting_period_repository=period_repository or _FakeAccountingPeriodRepository(),
         idempotency_repository=idempotency_repository or _FakeIdempotencyRepository(values={}),
         uow=uow or _FakeUnitOfWork(),

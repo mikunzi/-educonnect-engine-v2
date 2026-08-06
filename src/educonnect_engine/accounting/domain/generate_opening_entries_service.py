@@ -53,10 +53,7 @@ class GenerateOpeningEntriesService:
             *balance_sheet.liabilities.lines,
             *balance_sheet.equity.lines,
         )
-        if any(
-            line.account_number == retained_earnings_account_number
-            for line in carried_lines
-        ):
+        if any(line.account_number == retained_earnings_account_number for line in carried_lines):
             raise OpeningEntryRetainedEarningsAccountConflictError(
                 "retained earnings account must not collide with a carried account",
             )

@@ -387,8 +387,7 @@ class _InMemoryFiscalYearClosingPrerequisiteRepository(FiscalYearClosingPrerequi
         fiscal_year: FiscalYear,
     ) -> bool:
         return (
-            self.source_repository.get_consistent_source(legal_entity_id, fiscal_year)
-            is not None
+            self.source_repository.get_consistent_source(legal_entity_id, fiscal_year) is not None
         )
 
 

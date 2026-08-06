@@ -13,9 +13,7 @@ from educonnect_engine.accounting.domain.debit_credit_side import DebitCreditSid
 
 def test_accounting_full_cycle_end_to_end() -> None:
     """Validate the complete accounting flow from recording to opening entries."""
-    module_path = (
-        Path(__file__).resolve().parents[3] / "examples" / "accounting_full_cycle.py"
-    )
+    module_path = Path(__file__).resolve().parents[3] / "examples" / "accounting_full_cycle.py"
     namespace = runpy.run_path(str(module_path))
     run_accounting_full_cycle = namespace["run_accounting_full_cycle"]
 

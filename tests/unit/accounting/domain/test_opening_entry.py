@@ -5,6 +5,12 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import pytest
+
+from educonnect_engine.accounting.domain.account_number import AccountNumber
+from educonnect_engine.accounting.domain.debit_credit_side import DebitCreditSide
+from educonnect_engine.accounting.domain.journal_entry import JournalEntry
+from educonnect_engine.accounting.domain.journal_entry_id import JournalEntryId
+from educonnect_engine.accounting.domain.journal_line import JournalLine
 from educonnect_engine.accounting.domain.opening_entry import (
     OpeningEntry,
     OpeningEntryFiscalYearSequenceError,
@@ -14,12 +20,6 @@ from educonnect_engine.accounting.domain.opening_entry import (
     OpeningEntryVersionConflictError,
 )
 from educonnect_engine.accounting.domain.opening_entry_status import OpeningEntryStatus
-
-from educonnect_engine.accounting.domain.account_number import AccountNumber
-from educonnect_engine.accounting.domain.debit_credit_side import DebitCreditSide
-from educonnect_engine.accounting.domain.journal_entry import JournalEntry
-from educonnect_engine.accounting.domain.journal_entry_id import JournalEntryId
-from educonnect_engine.accounting.domain.journal_line import JournalLine
 from educonnect_engine.accounting.domain.year_end_snapshot_id import YearEndSnapshotId
 from educonnect_engine.shared.value_objects.currency import Currency
 from educonnect_engine.shared.value_objects.fiscal_year import FiscalYear
