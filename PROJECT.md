@@ -5,10 +5,14 @@
 EduConnect Engine v2 is a modular Python platform that will host financial and AI-driven
 capabilities for education-related workflows.
 
-## Current State (Architecture Milestone After Phase 6.2)
+## Current State
 
-- Accounting core implemented and validated through Phase 6.2
-- Core architecture stabilized before Phase 6.3
+Jalon technique:
+
+Post-Phase 6.4
+Opening entries et report a nouveau disponibles.
+
+- Accounting core implemented and validated through Post-Phase 6.4
 - Tooling baseline preserved (ruff, mypy, pytest, pre-commit, CI)
 
 Completed accounting phases:
@@ -26,9 +30,18 @@ Completed accounting phases:
 - Accounting Period Lifecycle
 - Fiscal Year Closing
 
-Next phase:
+Next technical core phase:
 
-- Phase 6.3 - Closing Entries & Opening Entries
+- Phase 7 - Persistence Adapters
+- Persistent repositories
+- Transactions
+- Aggregate mapping
+- Migrations
+- Database integration tests
+
+Next product consumer of the engine:
+
+- EduConnect Recruit MVP (planned, not delivered)
 
 ## Bounded Contexts
 
@@ -63,11 +76,11 @@ Next phase:
 - Multi-entity consolidation
 - Advanced tax automation
 
-## Reference Quality State (2026-08-02)
+## Reference Quality State (2026-08-06)
 
 - Ruff: pass
 - MyPy: pass
-- Pytest: `379 passed`
+- Pytest: `420 passed`
 - Coverage: `97%`
 
 ## Known Technical Debt

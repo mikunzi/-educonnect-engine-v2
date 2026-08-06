@@ -768,6 +768,8 @@ def run_accounting_full_cycle() -> FullCycleResult:
 def main() -> None:
     """Run the demonstration and print a concise summary."""
     result = run_accounting_full_cycle()
+    net_result_side = result.income_statement.net_result_side()
+    net_result_side_label = net_result_side.value if net_result_side is not None else "none"
     print(f"Posted entries: {len(result.posted_entries)}")
     print(
         "Trial balance totals:",
@@ -776,7 +778,7 @@ def main() -> None:
     )
     print(
         "Net result:",
-        result.income_statement.net_result_side().value,
+        net_result_side_label,
         result.income_statement.net_result_amount().amount,
     )
     print("Snapshot:", result.snapshot.id.value, "FY", result.snapshot.fiscal_year.value)

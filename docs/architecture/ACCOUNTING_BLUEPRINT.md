@@ -288,6 +288,26 @@ Limites TVA V1:
 - extraction d'assiettes sans moteur fiscal avance
 - pas de cas complexes transfrontaliers en V1
 
+## Conformité CO — exigences reportées sur l’infrastructure
+
+Le noyau metier impose des invariants, mais la conformite operationnelle depend aussi de l'infrastructure.
+Le systeme ne doit jamais presenter l'etat actuel comme "deja conforme" sans preuves d'exploitation.
+
+Exigences a couvrir par les adapters de persistance et d'exploitation:
+- inalterabilite des ecritures persistees (append-only pour les ecritures comptabilisees)
+- absence de suppression silencieuse (suppression logique tracee ou interdite selon politique)
+- piste d'audit persistee (qui, quoi, quand, pourquoi, correlation)
+- conservation des documents relies aux ecritures selon la duree applicable
+- horodatage fiable (UTC, source de temps maitrisee, derive controlee)
+- integrite des pieces (empreintes, verification a la lecture, non-alteration)
+- tracabilite des modifications de metadonnees (journal de changement versionne)
+- controles d'acces (separation des roles, moindre privilege, revocation)
+- sauvegarde et restauration testees (RPO/RTO definis et verifies)
+- responsabilite explicite de l'infrastructure pour ces garanties hors domaine pur
+
+References legales indicatives: art. 957a CO, art. 958f CO, Olico.
+Pour chaque reference ci-dessus: A verifier sur le texte legal en vigueur avant toute communication client ou mise en production.
+
 ## 15. Hierarchie des erreurs metier
 
 Chaque erreur metier expose:
