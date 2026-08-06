@@ -2,13 +2,15 @@
 
 from .bootstrap import SQLiteSchemaBootstrap
 from .connection import ConnectionFactory, DatabaseConfig, SQLiteConnection
-from .mappers import JournalEntrySQLiteMapper
-from .repositories import SQLiteJournalEntryRepository
+from .mappers import AccountSQLiteMapper, JournalEntrySQLiteMapper
+from .repositories import SQLiteAccountRepository, SQLiteJournalEntryRepository
 
 __all__ = [
+    "AccountSQLiteMapper",
     "ConnectionFactory",
     "DatabaseConfig",
     "JournalEntrySQLiteMapper",
+    "SQLiteAccountRepository",
     "SQLiteConnection",
     "SQLiteJournalEntryRepository",
     "SQLiteSchemaBootstrap",

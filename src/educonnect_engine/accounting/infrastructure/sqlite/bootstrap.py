@@ -18,6 +18,7 @@ class SQLiteSchemaBootstrap:
     _MIGRATIONS: tuple[tuple[int, str], ...] = (
         (1, "001_initial.sql"),
         (2, "002_journal_entries.sql"),
+        (3, "003_accounts.sql"),
     )
 
     def __init__(
