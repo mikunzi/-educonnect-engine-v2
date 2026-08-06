@@ -12,6 +12,7 @@ from .repositories import (
     SQLiteAccountRepository,
     SQLiteJournalEntryRepository,
 )
+from .unit_of_work import SQLiteUnitOfWork
 
 __all__ = [
     "AccountSQLiteMapper",
@@ -24,4 +25,5 @@ __all__ = [
     "SQLiteConnection",
     "SQLiteJournalEntryRepository",
     "SQLiteSchemaBootstrap",
+    "SQLiteUnitOfWork",
 ]
