@@ -19,6 +19,7 @@ class SQLiteSchemaBootstrap:
         (1, "001_initial.sql"),
         (2, "002_journal_entries.sql"),
         (3, "003_accounts.sql"),
+        (4, "004_accounting_periods.sql"),
     )
 
     def __init__(
