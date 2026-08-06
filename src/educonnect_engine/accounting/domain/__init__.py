@@ -39,6 +39,12 @@ from .fiscal_year_closing import (
 )
 from .fiscal_year_closing_id import FiscalYearClosingId
 from .fiscal_year_closing_status import FiscalYearClosingStatus
+from .generate_opening_entries_service import (
+    EmptyOpeningEntryError,
+    GenerateOpeningEntriesService,
+    OpeningEntryRetainedEarningsAccountConflictError,
+    OpeningEntryTargetFiscalYearError,
+)
 from .idempotency_key import IdempotencyKey
 from .income_statement import IncomeStatement
 from .income_statement_line import IncomeStatementLine
@@ -64,7 +70,17 @@ from .ledger_projection_service import (
     UnpostedJournalEntryProjectionError,
 )
 from .ledger_scope import LedgerScope
+from .opening_entry import (
+    OpeningEntry,
+    OpeningEntryFiscalYearSequenceError,
+    OpeningEntryJournalEntryError,
+    OpeningEntryScopeMismatchError,
+    OpeningEntryTransitionError,
+    OpeningEntryVersionConflictError,
+)
+from .opening_entry_status import OpeningEntryStatus
 from .repositories import (
+    OpeningEntryRepository,
     YearEndSnapshotPrerequisiteRepository,
     YearEndSnapshotRepository,
     YearEndSnapshotSourceRepository,
@@ -106,6 +122,7 @@ __all__ = [
     "CorrectionReason",
     "CurrentPeriodResult",
     "DebitCreditSide",
+    "EmptyOpeningEntryError",
     "FinancialStatementAccountClassifier",
     "FinancialStatements",
     "FinancialStatementsCurrencyMismatchError",
@@ -117,6 +134,7 @@ __all__ = [
     "FiscalYearClosingStatus",
     "FiscalYearClosingTransitionError",
     "FiscalYearClosingVersionConflictError",
+    "GenerateOpeningEntriesService",
     "IdempotencyKey",
     "IncomeStatement",
     "IncomeStatementLine",
@@ -134,6 +152,16 @@ __all__ = [
     "LedgerProjectionService",
     "LedgerScope",
     "LedgerScopeMismatchError",
+    "OpeningEntry",
+    "OpeningEntryFiscalYearSequenceError",
+    "OpeningEntryJournalEntryError",
+    "OpeningEntryRepository",
+    "OpeningEntryRetainedEarningsAccountConflictError",
+    "OpeningEntryScopeMismatchError",
+    "OpeningEntryStatus",
+    "OpeningEntryTargetFiscalYearError",
+    "OpeningEntryTransitionError",
+    "OpeningEntryVersionConflictError",
     "TrialBalance",
     "TrialBalanceAccountOrderError",
     "TrialBalanceCurrencyMismatchError",

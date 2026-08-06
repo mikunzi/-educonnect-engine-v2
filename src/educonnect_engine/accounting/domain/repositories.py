@@ -16,6 +16,7 @@ from .fiscal_year_closing_id import FiscalYearClosingId
 from .idempotency_key import IdempotencyKey
 from .journal_entry import JournalEntry
 from .journal_entry_id import JournalEntryId
+from .opening_entry import OpeningEntry
 from .year_end_snapshot import YearEndSnapshot
 from .year_end_snapshot_id import YearEndSnapshotId
 from .year_end_snapshot_source import YearEndSnapshotSource
@@ -177,6 +178,16 @@ class YearEndSnapshotPrerequisiteRepository(Protocol):
         fiscal_year: FiscalYear,
     ) -> bool:
         """Return whether the fiscal year is already closed."""
+
+
+class OpeningEntryRepository(Protocol):
+    """Repository contract for immutable opening entries."""
+
+    def exists_for_snapshot(self, snapshot_id: YearEndSnapshotId) -> bool:
+        """Return whether an opening entry already exists for a snapshot."""
+
+    def add(self, opening_entry: OpeningEntry) -> None:
+        """Persist a newly generated opening entry."""
 
 
 class IdempotencyRepository(Protocol[_ResultT]):
