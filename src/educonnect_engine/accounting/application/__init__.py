@@ -21,6 +21,15 @@ from .create_year_end_snapshot import (
     YearEndSnapshotRecordedEntriesExistError,
     YearEndSnapshotSourceNotFoundError,
 )
+from .generate_opening_entries import (
+    GenerateOpeningEntries,
+    GenerateOpeningEntriesAlreadyExistsError,
+    GenerateOpeningEntriesCommand,
+    GenerateOpeningEntriesResult,
+    OpeningEntriesSourceFiscalYearNotClosedError,
+    OpeningEntriesTargetPeriodNotOpenError,
+    YearEndSnapshotNotFoundError,
+)
 from .lock_accounting_period import (
     LockAccountingPeriod,
     LockAccountingPeriodCommand,
@@ -53,6 +62,10 @@ __all__ = [
     "CreateYearEndSnapshot",
     "CreateYearEndSnapshotCommand",
     "CreateYearEndSnapshotResult",
+    "GenerateOpeningEntries",
+    "GenerateOpeningEntriesAlreadyExistsError",
+    "GenerateOpeningEntriesCommand",
+    "GenerateOpeningEntriesResult",
     "InvalidIdempotencyKeyError",
     "LockAccountingPeriod",
     "LockAccountingPeriodCommand",
@@ -60,6 +73,8 @@ __all__ = [
     "OpenAccountingPeriod",
     "OpenAccountingPeriodCommand",
     "OpenAccountingPeriodResult",
+    "OpeningEntriesSourceFiscalYearNotClosedError",
+    "OpeningEntriesTargetPeriodNotOpenError",
     "PostJournalEntry",
     "PostJournalEntryCommand",
     "PostJournalEntryResult",
@@ -70,6 +85,7 @@ __all__ = [
     "ReverseJournalEntryResult",
     "YearEndSnapshotAlreadyExistsError",
     "YearEndSnapshotFiscalYearClosedError",
+    "YearEndSnapshotNotFoundError",
     "YearEndSnapshotOperationInProgressError",
     "YearEndSnapshotRecordedEntriesExistError",
     "YearEndSnapshotSourceNotFoundError",
