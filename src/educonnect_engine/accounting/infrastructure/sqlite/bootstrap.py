@@ -15,26 +15,44 @@ from educonnect_engine.accounting.infrastructure.sqlite.connection import (
 class SQLiteSchemaBootstrap:
     """Apply and track the initial SQLite schema migration."""
 
-    def __init__(self, connection_factory: ConnectionFactory, config: DatabaseConfig) -> None:
+    _MIGRATIONS: tuple[tuple[int, str], ...] = (
+        (1, "001_initial.sql"),
+        (2, "002_journal_entries.sql"),
+    )
+
+    def __init__(
+        self,
+        connection_factory: ConnectionFactory,
+        config: DatabaseConfig,
+        target_version: int = 1,
+    ) -> None:
         self._connection_factory = connection_factory
         self._config = config
+        self._target_version = target_version
+
+        available_versions = {version for version, _ in self._MIGRATIONS}
+        if target_version not in available_versions:
+            raise ValueError("unsupported schema target version")
 
     def bootstrap(self) -> None:
-        """Create schema migration metadata and apply migration 001 exactly once."""
+        """Create schema metadata and apply pending migrations up to target version."""
         manager = self._connection_factory.create(self._config)
         connection = manager.open()
 
         try:
             connection.execute("BEGIN IMMEDIATE")
 
-            if not self._has_schema_migration_table(connection):
-                migration_sql = self._load_migration_sql("001_initial.sql")
-                connection.execute(migration_sql)
+            for version, migration_name in self._MIGRATIONS:
+                if version > self._target_version:
+                    continue
+                if self._is_migration_applied(connection, version):
+                    continue
 
-            if not self._is_migration_applied(connection, 1):
+                migration_sql = self._load_migration_sql(migration_name)
+                connection.executescript(migration_sql)
                 connection.execute(
                     "INSERT INTO schema_migrations(version, name, applied_at) VALUES(?, ?, ?)",
-                    (1, "001_initial.sql", self._utc_now_iso()),
+                    (version, migration_name, self._utc_now_iso()),
                 )
 
             connection.commit()
@@ -77,6 +95,10 @@ class SQLiteSchemaBootstrap:
 
     @staticmethod
     def _is_migration_applied(connection: sqlite3.Connection, version: int) -> bool:
+        if version == 1 and not SQLiteSchemaBootstrap._has_schema_migration_table(connection):
+            return False
+        if not SQLiteSchemaBootstrap._has_schema_migration_table(connection):
+            return False
         row = connection.execute(
             "SELECT 1 FROM schema_migrations WHERE version = ?",
             (version,),
