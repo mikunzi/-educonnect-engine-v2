@@ -1,0 +1,50 @@
+### version information
+
+```
+pre-commit version: 4.6.1
+git --version: 
+sys.version:
+    3.14.6 (v3.14.6:c63aec69bd5, Jun 10 2026, 08:07:54) [Clang 21.0.0 (clang-2100.1.1.101)]
+sys.executable: /Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/bin/python
+os.name: posix
+sys.platform: darwin
+```
+
+### error information
+
+```
+An error has occurred: FatalError: git failed. Is it installed, and are you in a Git repository directory?
+```
+
+```
+Traceback (most recent call last):
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/git.py", line 58, in get_root
+    cmd_output('git', 'rev-parse', '--show-cdup')[1].strip(),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/util.py", line 117, in cmd_output
+    returncode, stdout_b, stderr_b = cmd_output_b(*cmd, **kwargs)
+                                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/util.py", line 111, in cmd_output_b
+    raise CalledProcessError(returncode, cmd, stdout_b, stderr_b)
+pre_commit.util.CalledProcessError: command: ('/usr/bin/git', 'rev-parse', '--show-cdup')
+return code: 128
+stdout: (none)
+stderr:
+    fatal: unable to access '/Users/juniormazolo-mikunzi/.gitconfig': Operation not permitted
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/error_handler.py", line 73, in error_handler
+    yield
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/main.py", line 383, in main
+    _adjust_args_and_chdir(args)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/main.py", line 188, in _adjust_args_and_chdir
+    toplevel = git.get_root()
+  File "/Users/juniormazolo-mikunzi/Downloads/educonnect-engine-v2/.venv/lib/python3.14/site-packages/pre_commit/git.py", line 64, in get_root
+    raise FatalError(
+    ...<2 lines>...
+    )
+pre_commit.errors.FatalError: git failed. Is it installed, and are you in a Git repository directory?
+```

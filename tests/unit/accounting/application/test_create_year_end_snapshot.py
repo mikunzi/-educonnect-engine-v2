@@ -230,8 +230,7 @@ def _use_case(
             source_repository=source_repository,
             snapshot_repository=snapshot_repository,
             prerequisites=prerequisites or _FakePrerequisiteRepository(),
-            idempotency_repository=idempotency_repository
-            or _FakeIdempotencyRepository(values={}),
+            idempotency_repository=idempotency_repository or _FakeIdempotencyRepository(values={}),
             uow=uow or _FakeUnitOfWork(),
             clock=_FixedClock(),
         ),
