@@ -67,6 +67,11 @@ from .reverse_journal_entry import (
     ReverseJournalEntryHandler,
     ReverseJournalEntryResult,
 )
+from .trial_balance import (
+    TrialBalanceCommand,
+    TrialBalanceHandler,
+    TrialBalanceResult,
+)
 
 __all__ = [
     "CloseAccountingPeriod",
@@ -109,6 +114,9 @@ __all__ = [
     "ReverseJournalEntryCommand",
     "ReverseJournalEntryHandler",
     "ReverseJournalEntryResult",
+    "TrialBalanceCommand",
+    "TrialBalanceHandler",
+    "TrialBalanceResult",
     "YearEndSnapshotAlreadyExistsError",
     "YearEndSnapshotFiscalYearClosedError",
     "YearEndSnapshotNotFoundError",
