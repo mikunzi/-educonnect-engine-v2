@@ -78,12 +78,14 @@ def _new_uow(
     account_repos: list[_FakeRepository] = []
     period_repos: list[_FakeRepository] = []
     journal_repos: list[_FakeRepository] = []
+    ledger_projection_repos: list[_FakeRepository] = []
     uow = SQLiteUnitOfWork(
         connection_factory=factory,
         config=config,
         account_repository_builder=_builder(account_repos),
         accounting_period_repository_builder=_builder(period_repos),
         journal_entry_repository_builder=_builder(journal_repos),
+        ledger_projection_repository_builder=_builder(ledger_projection_repos),
     )
     return uow, manager, factory
 
@@ -140,10 +142,12 @@ def test_repositories_share_exact_same_connection_in_transaction() -> None:
         account_repo = uow.account_repository
         period_repo = uow.accounting_period_repository
         journal_repo = uow.journal_entry_repository
+        ledger_projection_repo = uow.ledger_projection_repository
 
         assert account_repo.connection is connection
         assert period_repo.connection is connection
         assert journal_repo.connection is connection
+        assert ledger_projection_repo.connection is connection
 
 
 def test_repositories_are_unavailable_outside_transaction() -> None:
@@ -152,6 +156,9 @@ def test_repositories_are_unavailable_outside_transaction() -> None:
 
     with pytest.raises(RuntimeError, match="transaction is not active"):
         _ = uow.account_repository
+
+    with pytest.raises(RuntimeError, match="transaction is not active"):
+        _ = uow.ledger_projection_repository
 
 
 def test_nested_transaction_is_rejected() -> None:

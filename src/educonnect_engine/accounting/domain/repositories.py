@@ -18,6 +18,7 @@ from .fiscal_year_closing_id import FiscalYearClosingId
 from .idempotency_key import IdempotencyKey
 from .journal_entry import JournalEntry
 from .journal_entry_id import JournalEntryId
+from .ledger_scope import LedgerScope
 from .opening_entry import OpeningEntry
 from .year_end_snapshot import YearEndSnapshot
 from .year_end_snapshot_id import YearEndSnapshotId
@@ -58,6 +59,13 @@ class JournalEntryRepository(Protocol):
 
     def delete_draft(self, entry_id: JournalEntryId, expected_version: int) -> None:
         """Delete a recorded journal entry with optimistic version expectation."""
+
+
+class LedgerProjectionRepository(Protocol):
+    """Read-side repository contract for ledger projection source entries."""
+
+    def get_posted_entries(self, scope: LedgerScope) -> tuple[JournalEntry, ...]:
+        """Load posted journal entries constrained to one explicit ledger scope."""
 
 
 class AccountingPeriodRepository(Protocol):

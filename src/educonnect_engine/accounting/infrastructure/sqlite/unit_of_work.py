@@ -12,6 +12,7 @@ from educonnect_engine.accounting.domain.repositories import (
     AccountingPeriodLifecycleRepository,
     AccountRepository,
     JournalEntryRepository,
+    LedgerProjectionRepository,
     UnitOfWork,
 )
 from educonnect_engine.accounting.infrastructure.sqlite.connection import (
@@ -21,6 +22,7 @@ from educonnect_engine.accounting.infrastructure.sqlite.repositories import (
     SQLiteAccountingPeriodRepository,
     SQLiteAccountRepository,
     SQLiteJournalEntryRepository,
+    SQLiteLedgerProjectionRepository,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,12 +68,16 @@ class SQLiteUnitOfWork(UnitOfWork):
         journal_entry_repository_builder: Callable[[sqlite3.Connection], JournalEntryRepository] = (
             SQLiteJournalEntryRepository
         ),
+        ledger_projection_repository_builder: Callable[
+            [sqlite3.Connection], LedgerProjectionRepository
+        ] = SQLiteLedgerProjectionRepository,
     ) -> None:
         self._connection_factory = connection_factory
         self._config = config
         self._account_repository_builder = account_repository_builder
         self._accounting_period_repository_builder = accounting_period_repository_builder
         self._journal_entry_repository_builder = journal_entry_repository_builder
+        self._ledger_projection_repository_builder = ledger_projection_repository_builder
 
         self._manager: _SQLiteConnectionManager | None = None
         self._connection: _SQLiteConnection | None = None
@@ -80,6 +86,7 @@ class SQLiteUnitOfWork(UnitOfWork):
         self._account_repository: AccountRepository | None = None
         self._accounting_period_repository: AccountingPeriodLifecycleRepository | None = None
         self._journal_entry_repository: JournalEntryRepository | None = None
+        self._ledger_projection_repository: LedgerProjectionRepository | None = None
 
     @property
     def account_repository(self) -> AccountRepository:
@@ -101,6 +108,13 @@ class SQLiteUnitOfWork(UnitOfWork):
         if self._journal_entry_repository is None:
             raise RuntimeError("transaction is not active")
         return self._journal_entry_repository
+
+    @property
+    def ledger_projection_repository(self) -> LedgerProjectionRepository:
+        """Return ledger projection repository bound to the active transaction."""
+        if self._ledger_projection_repository is None:
+            raise RuntimeError("transaction is not active")
+        return self._ledger_projection_repository
 
     @contextmanager
     def transaction(self) -> Iterator[None]:
@@ -146,6 +160,7 @@ class SQLiteUnitOfWork(UnitOfWork):
             self._account_repository = None
             self._accounting_period_repository = None
             self._journal_entry_repository = None
+            self._ledger_projection_repository = None
 
     def _start_transaction(self) -> None:
         self._manager = self._connection_factory.create(self._config)
@@ -158,6 +173,9 @@ class SQLiteUnitOfWork(UnitOfWork):
             self._connection,
         )
         self._journal_entry_repository = self._journal_entry_repository_builder(self._connection)
+        self._ledger_projection_repository = self._ledger_projection_repository_builder(
+            self._connection,
+        )
 
 
 __all__ = ["SQLiteUnitOfWork"]
