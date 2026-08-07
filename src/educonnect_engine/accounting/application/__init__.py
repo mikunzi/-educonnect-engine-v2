@@ -10,6 +10,11 @@ from .close_fiscal_year import (
     CloseFiscalYearCommand,
     CloseFiscalYearResult,
 )
+from .create_journal_entry import (
+    CreateJournalEntryCommand,
+    CreateJournalEntryHandler,
+    CreateJournalEntryResult,
+)
 from .create_year_end_snapshot import (
     CreateYearEndSnapshot,
     CreateYearEndSnapshotCommand,
@@ -59,6 +64,9 @@ __all__ = [
     "CloseFiscalYear",
     "CloseFiscalYearCommand",
     "CloseFiscalYearResult",
+    "CreateJournalEntryCommand",
+    "CreateJournalEntryHandler",
+    "CreateJournalEntryResult",
     "CreateYearEndSnapshot",
     "CreateYearEndSnapshotCommand",
     "CreateYearEndSnapshotResult",
