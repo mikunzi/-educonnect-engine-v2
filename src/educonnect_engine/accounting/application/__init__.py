@@ -54,6 +54,7 @@ from .record_journal_entry import RecordJournalEntry, RecordJournalEntryCommand
 from .reverse_journal_entry import (
     ReverseJournalEntry,
     ReverseJournalEntryCommand,
+    ReverseJournalEntryHandler,
     ReverseJournalEntryResult,
 )
 
@@ -90,6 +91,7 @@ __all__ = [
     "RecordJournalEntryCommand",
     "ReverseJournalEntry",
     "ReverseJournalEntryCommand",
+    "ReverseJournalEntryHandler",
     "ReverseJournalEntryResult",
     "YearEndSnapshotAlreadyExistsError",
     "YearEndSnapshotFiscalYearClosedError",
