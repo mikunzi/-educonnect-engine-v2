@@ -1,5 +1,8 @@
 """Unit tests for PostJournalEntry use case."""
 
+from __future__ import annotations
+
+import inspect
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
@@ -8,14 +11,15 @@ from decimal import Decimal
 
 import pytest
 
+import educonnect_engine.accounting.application.post_journal_entry as post_journal_entry_module
 from educonnect_engine.accounting.application.post_journal_entry import (
     AccountingPeriodClosedError,
     ConcurrencyConflictError,
     InvalidIdempotencyKeyError,
     JournalEntryAlreadyPostedError,
     JournalEntryNotFoundError,
-    PostJournalEntry,
     PostJournalEntryCommand,
+    PostJournalEntryHandler,
     PostJournalEntryResult,
 )
 from educonnect_engine.accounting.domain.account_number import AccountNumber
@@ -29,7 +33,6 @@ from educonnect_engine.accounting.domain.repositories import (
     AccountingPeriodRepository,
     IdempotencyRepository,
     JournalEntryRepository,
-    UnitOfWork,
 )
 from educonnect_engine.shared.clock import Clock
 from educonnect_engine.shared.value_objects.currency import Currency
@@ -44,14 +47,20 @@ from educonnect_engine.shared.value_objects.money import Money
 class _FakeJournalEntryRepository(JournalEntryRepository):
     entries: dict[JournalEntryId, JournalEntry]
     save_calls: list[tuple[JournalEntry, int]]
+    raise_on_get: Exception | None = None
+    raise_on_save: Exception | None = None
 
     def add(self, entry: JournalEntry) -> None:
         self.entries[entry.id] = entry
 
     def get_by_id(self, entry_id: JournalEntryId) -> JournalEntry | None:
+        if self.raise_on_get is not None:
+            raise self.raise_on_get
         return self.entries.get(entry_id)
 
     def save_posted(self, entry: JournalEntry, expected_version: int) -> None:
+        if self.raise_on_save is not None:
+            raise self.raise_on_save
         self.save_calls.append((entry, expected_version))
         self.entries[entry.id] = entry
 
@@ -90,13 +99,48 @@ class _FakeIdempotencyRepository(IdempotencyRepository[PostJournalEntryResult]):
 
 
 @dataclass
-class _FakeUnitOfWork(UnitOfWork):
+class _FakePostJournalEntryUnitOfWork:
+    journal_entry_repository: _FakeJournalEntryRepository
+    accounting_period_repository: _FakeAccountingPeriodRepository
+    idempotency_repository: _FakeIdempotencyRepository
+    fail_commit: bool = False
     entered: int = 0
+    commit_calls: int = 0
+    rollback_calls: int = 0
+    close_calls: int = 0
+    active: bool = False
 
     @contextmanager
     def transaction(self) -> Iterator[None]:
+        if self.active:
+            raise RuntimeError("transaction already active")
+
+        self.active = True
         self.entered += 1
-        yield
+        try:
+            yield
+            self.commit()
+        except Exception:
+            self.rollback()
+            raise
+        finally:
+            self.close()
+
+    def commit(self) -> None:
+        if not self.active:
+            raise RuntimeError("transaction is not active")
+        self.commit_calls += 1
+        if self.fail_commit:
+            raise RuntimeError("commit failed")
+
+    def rollback(self) -> None:
+        if not self.active:
+            raise RuntimeError("transaction is not active")
+        self.rollback_calls += 1
+
+    def close(self) -> None:
+        self.close_calls += 1
+        self.active = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,19 +177,33 @@ def _recorded_entry(entry_id: str = "JE-001", version: int = 0) -> JournalEntry:
     return replace(entry, version=version)
 
 
+def _new_uow(
+    *,
+    entry: JournalEntry | None,
+    period_open: bool,
+    fail_commit: bool = False,
+    stored_result: PostJournalEntryResult | None = None,
+) -> _FakePostJournalEntryUnitOfWork:
+    entries: dict[JournalEntryId, JournalEntry] = {}
+    if entry is not None:
+        entries[entry.id] = entry
+
+    idempotency_values: dict[IdempotencyKey, PostJournalEntryResult] = {}
+    if stored_result is not None:
+        idempotency_values[IdempotencyKey(value="post-je-001")] = stored_result
+
+    return _FakePostJournalEntryUnitOfWork(
+        journal_entry_repository=_FakeJournalEntryRepository(entries=entries, save_calls=[]),
+        accounting_period_repository=_FakeAccountingPeriodRepository(open_flag=period_open),
+        idempotency_repository=_FakeIdempotencyRepository(values=idempotency_values),
+        fail_commit=fail_commit,
+    )
+
+
 def test_post_journal_entry_first_processing_returns_canonical_result() -> None:
     entry = _recorded_entry()
-    repository = _FakeJournalEntryRepository(entries={entry.id: entry}, save_calls=[])
-    period_repository = _FakeAccountingPeriodRepository(open_flag=True)
-    idempotency_repository = _FakeIdempotencyRepository(values={})
-    uow = _FakeUnitOfWork()
-    use_case = PostJournalEntry(
-        repository=repository,
-        period_repository=period_repository,
-        idempotency_repository=idempotency_repository,
-        uow=uow,
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=entry, period_open=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     command = PostJournalEntryCommand(
         journal_entry_id=entry.id,
@@ -160,10 +218,13 @@ def test_post_journal_entry_first_processing_returns_canonical_result() -> None:
     assert result.posted_at == datetime(2026, 1, 31, 12, 0, tzinfo=UTC)
     assert result.version == 1
     assert result.idempotent_replay is False
-    assert len(repository.save_calls) == 1
-    assert repository.save_calls[0][1] == 0
-    assert idempotency_repository.get(command.idempotency_key) == result
+    assert len(uow.journal_entry_repository.save_calls) == 1
+    assert uow.journal_entry_repository.save_calls[0][1] == 0
+    assert uow.idempotency_repository.get(command.idempotency_key) == result
     assert uow.entered == 1
+    assert uow.commit_calls == 1
+    assert uow.rollback_calls == 0
+    assert uow.close_calls == 1
 
 
 def test_post_journal_entry_replay_returns_copy_with_replay_flag() -> None:
@@ -175,18 +236,8 @@ def test_post_journal_entry_replay_returns_copy_with_replay_flag() -> None:
         version=1,
         idempotent_replay=False,
     )
-    repository = _FakeJournalEntryRepository(entries={}, save_calls=[])
-    period_repository = _FakeAccountingPeriodRepository(open_flag=True)
-    idempotency_repository = _FakeIdempotencyRepository(
-        values={IdempotencyKey(value="post-je-001"): canonical},
-    )
-    use_case = PostJournalEntry(
-        repository=repository,
-        period_repository=period_repository,
-        idempotency_repository=idempotency_repository,
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=None, period_open=True, stored_result=canonical)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     result = use_case.execute(
         PostJournalEntryCommand(
@@ -201,17 +252,14 @@ def test_post_journal_entry_replay_returns_copy_with_replay_flag() -> None:
     assert result.posted_at == canonical.posted_at
     assert result.version == canonical.version
     assert result.idempotent_replay is True
-    assert repository.save_calls == []
+    assert uow.journal_entry_repository.save_calls == []
+    assert uow.commit_calls == 1
+    assert uow.rollback_calls == 0
 
 
 def test_post_journal_entry_raises_not_found() -> None:
-    use_case = PostJournalEntry(
-        repository=_FakeJournalEntryRepository(entries={}, save_calls=[]),
-        period_repository=_FakeAccountingPeriodRepository(open_flag=True),
-        idempotency_repository=_FakeIdempotencyRepository(values={}),
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=None, period_open=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     with pytest.raises(JournalEntryNotFoundError):
         use_case.execute(
@@ -221,17 +269,15 @@ def test_post_journal_entry_raises_not_found() -> None:
                 idempotency_key=IdempotencyKey(value="post-je-404"),
             ),
         )
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 1
+    assert uow.close_calls == 1
 
 
 def test_post_journal_entry_raises_concurrency_conflict() -> None:
     entry = _recorded_entry(version=2)
-    use_case = PostJournalEntry(
-        repository=_FakeJournalEntryRepository(entries={entry.id: entry}, save_calls=[]),
-        period_repository=_FakeAccountingPeriodRepository(open_flag=True),
-        idempotency_repository=_FakeIdempotencyRepository(values={}),
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=entry, period_open=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     with pytest.raises(ConcurrencyConflictError):
         use_case.execute(
@@ -241,17 +287,16 @@ def test_post_journal_entry_raises_concurrency_conflict() -> None:
                 idempotency_key=IdempotencyKey(value="post-je-001"),
             ),
         )
+    assert uow.journal_entry_repository.entries[entry.id].version == 2
+    assert uow.journal_entry_repository.save_calls == []
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 1
 
 
 def test_post_journal_entry_raises_period_closed() -> None:
     entry = _recorded_entry(version=0)
-    use_case = PostJournalEntry(
-        repository=_FakeJournalEntryRepository(entries={entry.id: entry}, save_calls=[]),
-        period_repository=_FakeAccountingPeriodRepository(open_flag=False),
-        idempotency_repository=_FakeIdempotencyRepository(values={}),
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=entry, period_open=False)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     with pytest.raises(AccountingPeriodClosedError):
         use_case.execute(
@@ -261,18 +306,15 @@ def test_post_journal_entry_raises_period_closed() -> None:
                 idempotency_key=IdempotencyKey(value="post-je-001"),
             ),
         )
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 1
 
 
 def test_post_journal_entry_raises_already_posted() -> None:
     recorded = _recorded_entry(version=0)
     posted = recorded.post(posted_at=datetime(2026, 1, 31, 12, 0, tzinfo=UTC))
-    use_case = PostJournalEntry(
-        repository=_FakeJournalEntryRepository(entries={posted.id: posted}, save_calls=[]),
-        period_repository=_FakeAccountingPeriodRepository(open_flag=True),
-        idempotency_repository=_FakeIdempotencyRepository(values={}),
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=posted, period_open=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     with pytest.raises(JournalEntryAlreadyPostedError):
         use_case.execute(
@@ -282,17 +324,15 @@ def test_post_journal_entry_raises_already_posted() -> None:
                 idempotency_key=IdempotencyKey(value="post-je-001"),
             ),
         )
+    assert uow.journal_entry_repository.save_calls == []
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 1
 
 
 def test_post_journal_entry_raises_invalid_idempotency_key() -> None:
     entry = _recorded_entry()
-    use_case = PostJournalEntry(
-        repository=_FakeJournalEntryRepository(entries={entry.id: entry}, save_calls=[]),
-        period_repository=_FakeAccountingPeriodRepository(open_flag=True),
-        idempotency_repository=_FakeIdempotencyRepository(values={}),
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
-    )
+    uow = _new_uow(entry=entry, period_open=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     with pytest.raises(InvalidIdempotencyKeyError):
         use_case.execute(
@@ -302,6 +342,9 @@ def test_post_journal_entry_raises_invalid_idempotency_key() -> None:
                 idempotency_key="post-je-001",  # type: ignore[arg-type]
             ),
         )
+    assert uow.entered == 0
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 0
 
 
 def test_post_journal_entry_raises_runtime_error_when_post_result_is_inconsistent() -> None:
@@ -342,13 +385,12 @@ def test_post_journal_entry_raises_runtime_error_when_post_result_is_inconsisten
         entries={broken_entry.id: broken_entry},  # type: ignore[dict-item]
         save_calls=[],
     )
-    use_case = PostJournalEntry(
-        repository=repository,
-        period_repository=_FakeAccountingPeriodRepository(open_flag=True),
+    uow = _FakePostJournalEntryUnitOfWork(
+        journal_entry_repository=repository,
+        accounting_period_repository=_FakeAccountingPeriodRepository(open_flag=True),
         idempotency_repository=_FakeIdempotencyRepository(values={}),
-        uow=_FakeUnitOfWork(),
-        clock=_FixedClock(),
     )
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
 
     with pytest.raises(RuntimeError, match="posted_at"):
         use_case.execute(
@@ -358,3 +400,69 @@ def test_post_journal_entry_raises_runtime_error_when_post_result_is_inconsisten
                 idempotency_key=IdempotencyKey(value="post-je-001"),
             ),
         )
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 1
+
+
+def test_post_journal_entry_rolls_back_on_repository_error() -> None:
+    entry = _recorded_entry(version=0)
+    uow = _new_uow(entry=entry, period_open=True)
+    uow.journal_entry_repository.raise_on_get = RuntimeError("repository failure")
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
+
+    with pytest.raises(RuntimeError, match="repository failure"):
+        use_case.execute(
+            PostJournalEntryCommand(
+                journal_entry_id=entry.id,
+                expected_version=0,
+                idempotency_key=IdempotencyKey(value="post-je-001"),
+            ),
+        )
+
+    assert uow.commit_calls == 0
+    assert uow.rollback_calls == 1
+    assert uow.close_calls == 1
+
+
+def test_post_journal_entry_rolls_back_when_commit_fails() -> None:
+    entry = _recorded_entry(version=0)
+    uow = _new_uow(entry=entry, period_open=True, fail_commit=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
+
+    with pytest.raises(RuntimeError, match="commit failed"):
+        use_case.execute(
+            PostJournalEntryCommand(
+                journal_entry_id=entry.id,
+                expected_version=0,
+                idempotency_key=IdempotencyKey(value="post-je-001"),
+            ),
+        )
+
+    assert uow.commit_calls == 1
+    assert uow.rollback_calls == 1
+    assert uow.close_calls == 1
+
+
+def test_post_journal_entry_saves_posted_entry_and_preserves_expected_version() -> None:
+    entry = _recorded_entry(version=3)
+    uow = _new_uow(entry=entry, period_open=True)
+    use_case = PostJournalEntryHandler(uow=uow, clock=_FixedClock())
+
+    use_case.execute(
+        PostJournalEntryCommand(
+            journal_entry_id=entry.id,
+            expected_version=3,
+            idempotency_key=IdempotencyKey(value="post-je-001"),
+        ),
+    )
+
+    saved_entry, expected_version = uow.journal_entry_repository.save_calls[0]
+    assert expected_version == 3
+    assert saved_entry.status is JournalEntryStatus.POSTED
+    assert saved_entry.version == 4
+
+
+def test_application_module_has_no_sqlite_dependency() -> None:
+    source = inspect.getsource(post_journal_entry_module)
+    assert "sqlite3" not in source
+    assert "infrastructure.sqlite" not in source
