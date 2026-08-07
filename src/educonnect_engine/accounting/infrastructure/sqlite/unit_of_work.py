@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -21,6 +22,8 @@ from educonnect_engine.accounting.infrastructure.sqlite.repositories import (
     SQLiteAccountRepository,
     SQLiteJournalEntryRepository,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class _SQLiteConnection(Protocol):
@@ -105,11 +108,13 @@ class SQLiteUnitOfWork(UnitOfWork):
         if self._transaction_active:
             raise RuntimeError("transaction already active")
 
+        logger.debug("sqlite uow transaction start", extra={"db_path": self._config.path})
         self._start_transaction()
         try:
             yield
             self.commit()
         except Exception:
+            logger.debug("sqlite uow transaction rollback", extra={"db_path": self._config.path})
             self.rollback()
             raise
         finally:
@@ -120,6 +125,7 @@ class SQLiteUnitOfWork(UnitOfWork):
         if self._connection is None or not self._transaction_active:
             raise RuntimeError("transaction is not active")
         self._connection.commit()
+        logger.debug("sqlite uow transaction committed", extra={"db_path": self._config.path})
 
     def rollback(self) -> None:
         """Rollback current transaction when active."""
@@ -132,6 +138,7 @@ class SQLiteUnitOfWork(UnitOfWork):
         try:
             if self._manager is not None:
                 self._manager.close()
+                logger.debug("sqlite uow connection closed", extra={"db_path": self._config.path})
         finally:
             self._manager = None
             self._connection = None

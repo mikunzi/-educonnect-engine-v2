@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 from datetime import UTC, datetime
 from importlib import resources
@@ -10,6 +11,8 @@ from educonnect_engine.accounting.infrastructure.sqlite.connection import (
     ConnectionFactory,
     DatabaseConfig,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SQLiteSchemaBootstrap:
@@ -42,6 +45,10 @@ class SQLiteSchemaBootstrap:
         connection = manager.open()
 
         try:
+            logger.debug(
+                "sqlite bootstrap start",
+                extra={"db_path": self._config.path, "target_version": self._target_version},
+            )
             connection.execute("BEGIN IMMEDIATE")
 
             for version, migration_name in self._MIGRATIONS:
@@ -50,6 +57,14 @@ class SQLiteSchemaBootstrap:
                 if self._is_migration_applied(connection, version):
                     continue
 
+                logger.info(
+                    "applying sqlite migration",
+                    extra={
+                        "db_path": self._config.path,
+                        "version": version,
+                        "name": migration_name,
+                    },
+                )
                 migration_sql = self._load_migration_sql(migration_name)
                 connection.executescript(migration_sql)
                 connection.execute(
@@ -58,7 +73,15 @@ class SQLiteSchemaBootstrap:
                 )
 
             connection.commit()
+            logger.debug(
+                "sqlite bootstrap committed",
+                extra={"db_path": self._config.path, "target_version": self._target_version},
+            )
         except Exception:
+            logger.exception(
+                "sqlite bootstrap failed; rolling back",
+                extra={"db_path": self._config.path, "target_version": self._target_version},
+            )
             connection.rollback()
             raise
         finally:
