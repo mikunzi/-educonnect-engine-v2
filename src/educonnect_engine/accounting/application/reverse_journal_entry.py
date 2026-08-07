@@ -1,7 +1,11 @@
 """ReverseJournalEntry use case."""
 
+from __future__ import annotations
+
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Protocol, final
 
 from educonnect_engine.accounting.domain.correction_reason import CorrectionReason
 from educonnect_engine.accounting.domain.idempotency_key import IdempotencyKey
@@ -39,6 +43,22 @@ class InvalidIdempotencyKeyError(Exception):
     """Raised when idempotency key payload is invalid."""
 
 
+class ReverseJournalEntryUnitOfWork(UnitOfWork, Protocol):
+    """UnitOfWork contract required by ReverseJournalEntry handler."""
+
+    @property
+    def journal_entry_repository(self) -> JournalEntryRepository:
+        """Journal entry repository bound to current transaction."""
+
+    @property
+    def accounting_period_repository(self) -> AccountingPeriodRepository:
+        """Accounting period repository bound to current transaction."""
+
+    @property
+    def idempotency_repository(self) -> IdempotencyRepository[ReverseJournalEntryResult]:
+        """Idempotency repository bound to current transaction."""
+
+
 @dataclass(frozen=True, slots=True)
 class ReverseJournalEntryCommand:
     """Input payload for reversing a posted journal entry."""
@@ -67,13 +87,10 @@ class ReverseJournalEntryResult:
 
 
 @dataclass(frozen=True, slots=True)
-class ReverseJournalEntry:
-    """Application service orchestrating full reversal of a posted journal entry."""
+class ReverseJournalEntryHandler:
+    """Transactional service orchestrating full reversal of a posted journal entry."""
 
-    repository: JournalEntryRepository
-    period_repository: AccountingPeriodRepository
-    idempotency_repository: IdempotencyRepository[ReverseJournalEntryResult]
-    uow: UnitOfWork
+    uow: ReverseJournalEntryUnitOfWork
     clock: Clock
 
     def execute(self, command: ReverseJournalEntryCommand) -> ReverseJournalEntryResult:
@@ -81,7 +98,7 @@ class ReverseJournalEntry:
             raise InvalidIdempotencyKeyError("idempotency key must be an IdempotencyKey")
 
         with self.uow.transaction():
-            stored = self.idempotency_repository.get(command.idempotency_key)
+            stored = self.uow.idempotency_repository.get(command.idempotency_key)
             if stored is not None:
                 return ReverseJournalEntryResult(
                     original_entry_id=stored.original_entry_id,
@@ -92,14 +109,14 @@ class ReverseJournalEntry:
                     idempotent_replay=True,
                 )
 
-            original = self.repository.get_by_id(command.original_entry_id)
+            original = self.uow.journal_entry_repository.get_by_id(command.original_entry_id)
             if original is None:
                 raise JournalEntryNotFoundError("original journal entry not found")
             if original.status is not JournalEntryStatus.POSTED:
                 raise JournalEntryNotPostedError("original journal entry must be POSTED")
             if original.version != command.expected_version:
                 raise ConcurrencyConflictError("journal entry version mismatch")
-            if not self.period_repository.is_open(
+            if not self.uow.accounting_period_repository.is_open(
                 legal_entity_id=original.legal_entity_id,
                 fiscal_year=command.reversal_fiscal_year,
                 posting_date=command.reversal_date,
@@ -116,7 +133,7 @@ class ReverseJournalEntry:
             )
             reversal_posted = reversal_recorded.post(posted_at=self.clock.now_utc())
 
-            self.repository.save_reversal(
+            self.uow.journal_entry_repository.save_reversal(
                 reversal_entry=reversal_posted,
                 original_entry_id=command.original_entry_id,
                 expected_original_version=command.expected_version,
@@ -134,5 +151,58 @@ class ReverseJournalEntry:
                 version=reversal_posted.version,
                 idempotent_replay=False,
             )
-            self.idempotency_repository.save(command.idempotency_key, result)
+            self.uow.idempotency_repository.save(command.idempotency_key, result)
             return result
+
+
+@final
+class _RepositoryBoundUnitOfWork(ReverseJournalEntryUnitOfWork):
+    """Bind repositories to an existing UnitOfWork transaction boundary."""
+
+    def __init__(
+        self,
+        *,
+        uow: UnitOfWork,
+        journal_entry_repository: JournalEntryRepository,
+        accounting_period_repository: AccountingPeriodRepository,
+        idempotency_repository: IdempotencyRepository[ReverseJournalEntryResult],
+    ) -> None:
+        self._uow = uow
+        self._journal_entry_repository = journal_entry_repository
+        self._accounting_period_repository = accounting_period_repository
+        self._idempotency_repository = idempotency_repository
+
+    @property
+    def journal_entry_repository(self) -> JournalEntryRepository:
+        return self._journal_entry_repository
+
+    @property
+    def accounting_period_repository(self) -> AccountingPeriodRepository:
+        return self._accounting_period_repository
+
+    @property
+    def idempotency_repository(self) -> IdempotencyRepository[ReverseJournalEntryResult]:
+        return self._idempotency_repository
+
+    def transaction(self) -> AbstractContextManager[None]:
+        return self._uow.transaction()
+
+
+@dataclass(frozen=True, slots=True)
+class ReverseJournalEntry:
+    """Backward-compatible facade delegating to ReverseJournalEntryHandler."""
+
+    repository: JournalEntryRepository
+    period_repository: AccountingPeriodRepository
+    idempotency_repository: IdempotencyRepository[ReverseJournalEntryResult]
+    uow: UnitOfWork
+    clock: Clock
+
+    def execute(self, command: ReverseJournalEntryCommand) -> ReverseJournalEntryResult:
+        bound_uow = _RepositoryBoundUnitOfWork(
+            uow=self.uow,
+            journal_entry_repository=self.repository,
+            accounting_period_repository=self.period_repository,
+            idempotency_repository=self.idempotency_repository,
+        )
+        return ReverseJournalEntryHandler(uow=bound_uow, clock=self.clock).execute(command)
