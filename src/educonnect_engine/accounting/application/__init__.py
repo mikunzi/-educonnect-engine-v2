@@ -40,6 +40,11 @@ from .generate_opening_entries import (
     OpeningEntriesTargetPeriodNotOpenError,
     YearEndSnapshotNotFoundError,
 )
+from .ledger_projection import (
+    LedgerProjectionCommand,
+    LedgerProjectionHandler,
+    LedgerProjectionResult,
+)
 from .lock_accounting_period import (
     LockAccountingPeriod,
     LockAccountingPeriodCommand,
@@ -84,6 +89,9 @@ __all__ = [
     "GenerateOpeningEntriesCommand",
     "GenerateOpeningEntriesResult",
     "InvalidIdempotencyKeyError",
+    "LedgerProjectionCommand",
+    "LedgerProjectionHandler",
+    "LedgerProjectionResult",
     "LockAccountingPeriod",
     "LockAccountingPeriodCommand",
     "LockAccountingPeriodResult",

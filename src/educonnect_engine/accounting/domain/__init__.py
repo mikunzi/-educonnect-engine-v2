@@ -83,6 +83,7 @@ from .opening_entry import (
 from .opening_entry_status import OpeningEntryStatus
 from .repositories import (
     AccountRepository,
+    LedgerProjectionRepository,
     OpeningEntryRepository,
     YearEndSnapshotPrerequisiteRepository,
     YearEndSnapshotRepository,
@@ -155,6 +156,7 @@ __all__ = [
     "LedgerAccount",
     "LedgerCurrencyMismatchError",
     "LedgerLine",
+    "LedgerProjectionRepository",
     "LedgerProjectionService",
     "LedgerScope",
     "LedgerScopeMismatchError",
