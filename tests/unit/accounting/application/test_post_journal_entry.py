@@ -72,6 +72,9 @@ class _FakeJournalEntryRepository(JournalEntryRepository):
     ) -> None:
         _ = (reversal_entry, original_entry_id, expected_original_version)
 
+    def delete_draft(self, entry_id: JournalEntryId, expected_version: int) -> None:
+        _ = (entry_id, expected_version)
+
 
 @dataclass
 class _FakeAccountingPeriodRepository(AccountingPeriodRepository):

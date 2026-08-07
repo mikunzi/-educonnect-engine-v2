@@ -75,6 +75,9 @@ class _FakeJournalEntryRepository(JournalEntryRepository):
         self.save_calls.append((reversal_entry, original_entry_id, expected_original_version))
         self.entries[reversal_entry.id] = reversal_entry
 
+    def delete_draft(self, entry_id: JournalEntryId, expected_version: int) -> None:
+        _ = (entry_id, expected_version)
+
 
 @dataclass
 class _FakeAccountingPeriodRepository(AccountingPeriodRepository):

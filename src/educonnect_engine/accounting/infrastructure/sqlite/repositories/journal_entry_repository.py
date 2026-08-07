@@ -135,6 +135,18 @@ class SQLiteJournalEntryRepository(JournalEntryRepository):
 
             self._insert_entry(reversal_entry)
 
+    def delete_draft(self, entry_id: JournalEntryId, expected_version: int) -> None:
+        with self._atomic_section():
+            result = self._connection.execute(
+                """
+                DELETE FROM journal_entries
+                WHERE id = ? AND status = ? AND version = ?
+                """,
+                (entry_id.value, "recorded", expected_version),
+            )
+            if result.rowcount != 1:
+                raise ValueError("journal entry version mismatch")
+
     def _insert_entry(self, entry: JournalEntry) -> None:
         header = self._mapper.to_header_row(entry)
         line_rows = self._mapper.to_line_rows(entry)
