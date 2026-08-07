@@ -7,6 +7,8 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from educonnect_engine.accounting.domain.account_number import AccountNumber
 from educonnect_engine.accounting.domain.correction_reason import CorrectionReason
 from educonnect_engine.accounting.domain.debit_credit_side import DebitCreditSide
@@ -162,7 +164,7 @@ def test_add_rolls_back_header_when_line_insert_fails(tmp_path: Path) -> None:
     repository, connection = _new_repository(db_path)
 
     try:
-        repository._mapper = _FailingLineMapper()  # type: ignore[attr-defined]
+        repository._mapper = _FailingLineMapper()
         entry = _recorded_entry("JE-2026-ROLLBACK")
 
         try:
@@ -254,3 +256,67 @@ def test_schema_contains_only_expected_tables_for_this_phase(tmp_path: Path) -> 
         "opening_entries",
     }
     assert forbidden.isdisjoint(tables)
+
+
+def test_delete_draft_removes_recorded_entry_and_lines(tmp_path: Path) -> None:
+    db_path = tmp_path / "journal-entry-delete-draft.db"
+    _bootstrap_v2(db_path)
+    repository, connection = _new_repository(db_path)
+
+    try:
+        entry = _recorded_entry("JE-2026-DRAFT-DEL")
+        repository.add(entry)
+
+        repository.delete_draft(entry_id=entry.id, expected_version=0)
+
+        loaded = repository.get_by_id(entry.id)
+        assert loaded is None
+
+        line_count_row = connection.execute(
+            "SELECT COUNT(*) AS count FROM journal_entry_lines WHERE entry_id = ?",
+            (entry.id.value,),
+        ).fetchone()
+        assert line_count_row is not None
+        assert int(line_count_row["count"]) == 0
+    finally:
+        connection.close()
+
+
+def test_delete_draft_rejects_posted_entry(tmp_path: Path) -> None:
+    db_path = tmp_path / "journal-entry-delete-posted.db"
+    _bootstrap_v2(db_path)
+    repository, connection = _new_repository(db_path)
+
+    try:
+        posted = _recorded_entry("JE-2026-POSTED-DEL").post(
+            posted_at=datetime(2026, 1, 15, 10, 30, tzinfo=UTC),
+        )
+        repository.add(posted)
+
+        with pytest.raises(ValueError, match="version mismatch"):
+            repository.delete_draft(entry_id=posted.id, expected_version=1)
+
+        loaded = repository.get_by_id(posted.id)
+        assert loaded is not None
+        assert loaded.status == posted.status
+    finally:
+        connection.close()
+
+
+def test_delete_draft_rejects_version_mismatch(tmp_path: Path) -> None:
+    db_path = tmp_path / "journal-entry-delete-version.db"
+    _bootstrap_v2(db_path)
+    repository, connection = _new_repository(db_path)
+
+    try:
+        entry = _recorded_entry("JE-2026-DEL-VERSION")
+        repository.add(entry)
+
+        with pytest.raises(ValueError, match="version mismatch"):
+            repository.delete_draft(entry_id=entry.id, expected_version=1)
+
+        loaded = repository.get_by_id(entry.id)
+        assert loaded is not None
+        assert loaded.status == entry.status
+    finally:
+        connection.close()

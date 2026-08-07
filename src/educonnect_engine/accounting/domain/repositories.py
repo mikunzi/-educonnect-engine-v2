@@ -56,6 +56,9 @@ class JournalEntryRepository(Protocol):
     ) -> None:
         """Persist reversal atomically with version and direct-reversal uniqueness checks."""
 
+    def delete_draft(self, entry_id: JournalEntryId, expected_version: int) -> None:
+        """Delete a recorded journal entry with optimistic version expectation."""
+
 
 class AccountingPeriodRepository(Protocol):
     """Repository contract exposing accounting period status."""

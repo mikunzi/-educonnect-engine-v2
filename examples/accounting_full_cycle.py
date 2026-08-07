@@ -184,6 +184,14 @@ class _InMemoryJournalEntryRepository(JournalEntryRepository):
             raise ValueError("direct reversal already exists")
         self.state.journal_entries[reversal_entry.id] = reversal_entry
 
+    def delete_draft(self, entry_id: JournalEntryId, expected_version: int) -> None:
+        entry = self.state.journal_entries.get(entry_id)
+        if entry is None or entry.version != expected_version:
+            raise ValueError("journal entry version mismatch")
+        if entry.status is not JournalEntryStatus.RECORDED:
+            raise ValueError("journal entry version mismatch")
+        self.state.journal_entries.pop(entry_id)
+
 
 @dataclass
 class _InMemoryAccountingPeriodRepository(
