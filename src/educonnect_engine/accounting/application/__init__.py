@@ -1,5 +1,6 @@
 """Accounting application layer."""
 
+from .balance_sheet import BalanceSheetCommand, GenerateBalanceSheet
 from .close_accounting_period import (
     CloseAccountingPeriod,
     CloseAccountingPeriodCommand,
@@ -75,6 +76,7 @@ from .trial_balance import (
 )
 
 __all__ = [
+    "BalanceSheetCommand",
     "CloseAccountingPeriod",
     "CloseAccountingPeriodCommand",
     "CloseAccountingPeriodResult",
@@ -92,6 +94,7 @@ __all__ = [
     "DeleteDraftJournalEntryResult",
     "FinancialStatements",
     "FinancialStatementsUseCase",
+    "GenerateBalanceSheet",
     "GenerateOpeningEntries",
     "GenerateOpeningEntriesAlreadyExistsError",
     "GenerateOpeningEntriesCommand",
