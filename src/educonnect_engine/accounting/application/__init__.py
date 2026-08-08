@@ -31,6 +31,7 @@ from .delete_draft_journal_entry import (
     DeleteDraftJournalEntryHandler,
     DeleteDraftJournalEntryResult,
 )
+from .financial_statements import FinancialStatements, FinancialStatementsUseCase
 from .generate_opening_entries import (
     GenerateOpeningEntries,
     GenerateOpeningEntriesAlreadyExistsError,
@@ -89,6 +90,8 @@ __all__ = [
     "DeleteDraftJournalEntryCommand",
     "DeleteDraftJournalEntryHandler",
     "DeleteDraftJournalEntryResult",
+    "FinancialStatements",
+    "FinancialStatementsUseCase",
     "GenerateOpeningEntries",
     "GenerateOpeningEntriesAlreadyExistsError",
     "GenerateOpeningEntriesCommand",
