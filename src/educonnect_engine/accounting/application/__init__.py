@@ -32,7 +32,12 @@ from .delete_draft_journal_entry import (
     DeleteDraftJournalEntryHandler,
     DeleteDraftJournalEntryResult,
 )
-from .financial_statements import FinancialStatements, FinancialStatementsUseCase
+from .financial_statements import (
+    FinancialStatements,
+    FinancialStatementsCommand,
+    FinancialStatementsUseCase,
+    GenerateFinancialStatements,
+)
 from .generate_opening_entries import (
     GenerateOpeningEntries,
     GenerateOpeningEntriesAlreadyExistsError,
@@ -94,8 +99,10 @@ __all__ = [
     "DeleteDraftJournalEntryHandler",
     "DeleteDraftJournalEntryResult",
     "FinancialStatements",
+    "FinancialStatementsCommand",
     "FinancialStatementsUseCase",
     "GenerateBalanceSheet",
+    "GenerateFinancialStatements",
     "GenerateIncomeStatement",
     "GenerateOpeningEntries",
     "GenerateOpeningEntriesAlreadyExistsError",
