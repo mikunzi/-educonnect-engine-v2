@@ -42,6 +42,7 @@ from .generate_opening_entries import (
     OpeningEntriesTargetPeriodNotOpenError,
     YearEndSnapshotNotFoundError,
 )
+from .income_statement import GenerateIncomeStatement, IncomeStatementCommand
 from .ledger_projection import (
     LedgerProjectionCommand,
     LedgerProjectionHandler,
@@ -95,10 +96,12 @@ __all__ = [
     "FinancialStatements",
     "FinancialStatementsUseCase",
     "GenerateBalanceSheet",
+    "GenerateIncomeStatement",
     "GenerateOpeningEntries",
     "GenerateOpeningEntriesAlreadyExistsError",
     "GenerateOpeningEntriesCommand",
     "GenerateOpeningEntriesResult",
+    "IncomeStatementCommand",
     "InvalidIdempotencyKeyError",
     "LedgerProjectionCommand",
     "LedgerProjectionHandler",
