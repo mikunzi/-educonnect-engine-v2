@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block heading %}Correction complète{% endblock %}
+{% block content %}
+
+<h2>1. Calcul de l'amortissement</h2>
+{% for step in completed.correction.calculation_steps %}
+<div class="calc-step">
+  <p class="expr">
+    {{ step.left_operand | amount }} {{ step.operator }}
+    {% if step.right_operand_is_rate %}{{ step.right_operand | rate_percent }}{% else %}{{ step.right_operand | amount }}{% endif %}
+    = {{ step.result | amount }} {{ step.unit }}
+  </p>
+  <p>{{ step.explanation }}</p>
+</div>
+{% endfor %}
+
+<h2>2. Écriture comptable</h2>
+<p>{{ completed.correction.accounting_explanation }}</p>
+<dl class="situation">
+  <dt>Débit</dt><dd>{{ completed.expected_answer.debit_account }} — {{ completed.expected_answer.entry_amount | chf }}</dd>
+  <dt>Crédit</dt><dd>{{ completed.expected_answer.credit_account }} — {{ completed.expected_answer.entry_amount | chf }}</dd>
+</dl>
+
+<h2>3. Valeur comptable nette</h2>
+<p>{{ completed.correction.carrying_amount_explanation_prefix }}{{ completed.problem.acquisition_value | chf }}{{ completed.correction.carrying_amount_explanation_suffix }}</p>
+<p><strong>VCN : {{ completed.expected_answer.carrying_amount | chf }}</strong></p>
+
+<h2>4. Méthode directe / indirecte</h2>
+<p>{{ completed.correction.method_explanation }}</p>
+
+{% endblock %}
