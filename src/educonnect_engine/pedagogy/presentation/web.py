@@ -53,6 +53,11 @@ _SESSION_COOKIE = "amo001_session_id"
 _sessions: dict[str, DepreciationPracticeSession] = {}
 
 
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 def _new_seed() -> int:
     """Pick a seed for a brand-new practice. Overridable in tests for determinism."""
     return random.randint(0, 2**31 - 1)

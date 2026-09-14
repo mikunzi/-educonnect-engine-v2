@@ -77,6 +77,19 @@ make install-dev
 make check
 ```
 
+## AMO-001 Pilot Deployment
+
+Run the FastAPI application with exactly one process:
+
+```bash
+uvicorn educonnect_engine.pedagogy.presentation.web:app --host 0.0.0.0 --port $PORT --workers 1
+```
+
+Each browser receives an opaque HTTP-only cookie that identifies its practice session. Session
+objects are stored only in the application process, so multiple processes or instances would
+produce inconsistent state. A deployment or application restart discards every active session;
+learners must then start a new exercise. No application environment variables are required.
+
 ## Current Accounting Milestone
 
 Jalon technique:

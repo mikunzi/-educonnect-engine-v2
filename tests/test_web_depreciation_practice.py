@@ -68,6 +68,13 @@ def client():
     app.dependency_overrides.clear()
 
 
+def test_health(client: TestClient) -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 # --- 1-5: initial GET does not leak, does show the problem ---
 
 
@@ -228,9 +235,7 @@ def test_finish_displays_expected_answer_after_comparison_attempt(client):
     problem = generate_depreciation_problem(seed=_SEED)
     solution = solve(problem)
     comparison = build_method_comparison(problem)
-    client.post(
-        "/practice/depreciation/comparison/submit", data=_comparison_form(comparison)
-    )
+    client.post("/practice/depreciation/comparison/submit", data=_comparison_form(comparison))
 
     response = client.post("/practice/depreciation/finish")
     text = html.unescape(response.text)
@@ -247,9 +252,7 @@ def test_correction_page_displays_calculation_steps_and_method_explanation(clien
     client.post("/practice/depreciation/complete-accounting-phase")
     problem = generate_depreciation_problem(seed=_SEED)
     comparison = build_method_comparison(problem)
-    client.post(
-        "/practice/depreciation/comparison/submit", data=_comparison_form(comparison)
-    )
+    client.post("/practice/depreciation/comparison/submit", data=_comparison_form(comparison))
 
     response = client.post("/practice/depreciation/finish")
 
@@ -283,6 +286,25 @@ def test_same_session_keeps_the_same_problem_even_if_seed_would_differ():
     problem_for_seed_one = generate_depreciation_problem(seed=1)
     assert format_chf(problem_for_seed_one.acquisition_value) in html.unescape(first.text)
     assert format_chf(problem_for_seed_one.acquisition_value) in html.unescape(second.text)
+
+
+def test_two_browsers_have_isolated_sessions() -> None:
+    app.dependency_overrides[_new_seed] = lambda: _SEED
+    try:
+        with TestClient(app) as browser_a, TestClient(app) as browser_b:
+            browser_a.get("/practice/depreciation")
+            browser_b.get("/practice/depreciation")
+
+            assert browser_a.cookies.get("amo001_session_id") != browser_b.cookies.get(
+                "amo001_session_id"
+            )
+
+            browser_a.post("/practice/depreciation/complete-accounting-phase")
+
+            assert browser_a.get("/practice/depreciation/comparison").status_code == 200
+            assert browser_b.get("/practice/depreciation/comparison").status_code == 409
+    finally:
+        app.dependency_overrides.clear()
 
 
 def test_accounting_submission_rejected_after_phase_closed(client):

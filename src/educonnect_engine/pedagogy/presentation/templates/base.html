@@ -57,6 +57,16 @@
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
       overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
+    @media (max-width: 600px) {
+      body { margin: 1rem auto; padding: 0 .75rem; }
+      .situation, fieldset { padding: .85rem; }
+      .situation dl { grid-template-columns: 1fr; gap: .15rem; }
+      .situation dd { margin-bottom: .5rem; overflow-wrap: anywhere; }
+      table { display: block; overflow-x: auto; }
+      th, td { min-width: 8rem; }
+      table.journal th { min-width: auto; }
+      button { width: 100%; }
+    }
   </style>
 </head>
 <body>
