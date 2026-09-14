@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="situation">
+  <p>{{ learner_view.economic_rationale }}</p>
+  <dl>
+    <dt>Contexte</dt><dd>{{ learner_view.problem.context }}</dd>
+    <dt>Actif</dt><dd>{{ learner_view.problem.asset.name }}</dd>
+    <dt>Valeur d'acquisition</dt><dd>{{ learner_view.problem.acquisition_value | chf }}</dd>
+    <dt>Taux d'amortissement</dt><dd>{{ learner_view.problem.rate | rate_percent }}</dd>
+    <dt>Méthode</dt><dd>{{ learner_view.problem.accounting_method.value }}</dd>
+    <dt>Exercice</dt><dd>{{ learner_view.problem.exercise_year }}</dd>
+  </dl>
+  <p>{{ learner_view.prompt }}</p>
+</section>
+
+{% if result %}
+<section>
+  <p class="score">Score : {{ result.score }} / {{ result.max_score }}</p>
+  <ul class="feedback">
+    {% for item in result.feedback %}
+    <li class="feedback-{{ item.kind.value }}">
+      <span class="kind">{{ item.kind.value | upper }}</span>{{ item.message }}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+{% if phase.value == "accounting" %}
+<form method="post" action="/practice/depreciation/submit">
+  <fieldset>
+    <legend>A. Calcul</legend>
+    <label for="depreciation_amount">Amortissement annuel (CHF)</label>
+    <input type="text" id="depreciation_amount" name="depreciation_amount"
+           value="{{ submitted.depreciation_amount if submitted else '' }}">
+  </fieldset>
+
+  <fieldset>
+    <legend>B. Écriture comptable</legend>
+    <p class="muted">
+      Le montant de l'écriture est le montant enregistré à la fois au débit et au crédit.
+    </p>
+    <table class="journal">
+      <thead>
+        <tr><th></th><th>Compte</th><th>Montant (CHF)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Débit</th>
+          <td>
+            <label for="debit_account" class="visually-hidden">Compte débité</label>
+            <input type="text" id="debit_account" name="debit_account"
+                   value="{{ submitted.debit_account if submitted else '' }}">
+          </td>
+          <td rowspan="2">
+            <label for="entry_amount" class="visually-hidden">Montant de l'écriture</label>
+            <input type="text" id="entry_amount" name="entry_amount"
+                   value="{{ submitted.entry_amount if submitted else '' }}">
+          </td>
+        </tr>
+        <tr>
+          <th>Crédit</th>
+          <td>
+            <label for="credit_account" class="visually-hidden">Compte crédité</label>
+            <input type="text" id="credit_account" name="credit_account"
+                   value="{{ submitted.credit_account if submitted else '' }}">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </fieldset>
+
+  <fieldset>
+    <legend>C. Contrôle</legend>
+    <label for="carrying_amount">Valeur comptable nette (CHF)</label>
+    <input type="text" id="carrying_amount" name="carrying_amount"
+           value="{{ submitted.carrying_amount if submitted else '' }}">
+  </fieldset>
+
+  <button type="submit">Valider ma réponse</button>
+</form>
+
+<form method="post" action="/practice/depreciation/complete-accounting-phase">
+  <button type="submit" class="secondary">Passer à la comparaison des méthodes</button>
+</form>
+{% elif phase.value == "comparison" %}
+<p class="muted">
+  La phase comptable est terminée.
+  <a href="/practice/depreciation/comparison">Continuer vers la comparaison des méthodes</a>.
+</p>
+{% else %}
+<p class="muted">Exercice terminé.</p>
+<form method="post" action="/practice/depreciation/new">
+  <button type="submit">Nouvel exercice</button>
+</form>
+{% endif %}
+
+{% endblock %}

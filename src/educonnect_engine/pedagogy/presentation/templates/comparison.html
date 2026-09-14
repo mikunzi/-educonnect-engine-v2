@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block heading %}Comparaison amortissement direct / indirect{% endblock %}
+{% block content %}
+
+<p class="muted">
+  Complétez le tableau ci-dessous pour comparer la présentation de la méthode
+  directe et de la méthode indirecte pour ce même bien.
+</p>
+
+<section class="situation">
+  <p>
+    <strong>Méthode directe :</strong> l'amortissement réduit directement la valeur
+    enregistrée au compte de l'actif.
+  </p>
+  <p>
+    <strong>Méthode indirecte :</strong> la valeur d'acquisition reste enregistrée au
+    compte de l'actif ; la perte de valeur apparaît séparément, au compte d'ajustement
+    de valeur.
+  </p>
+</section>
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+<form method="post" action="/practice/depreciation/comparison/submit">
+  <table>
+    <thead>
+      <tr><th></th><th>Méthode directe</th><th>Méthode indirecte</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Compte crédité</th>
+        <td>
+          <label for="direct_credited_account" class="visually-hidden">
+            Compte crédité — méthode directe
+          </label>
+          <input type="text" id="direct_credited_account" name="direct_credited_account"
+                 value="{{ submitted.direct_credited_account if submitted else '' }}">
+          {% if result %}
+            {% if "direct_credited_account" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+        <td>
+          <label for="indirect_credited_account" class="visually-hidden">
+            Compte crédité — méthode indirecte
+          </label>
+          <input type="text" id="indirect_credited_account" name="indirect_credited_account"
+                 value="{{ submitted.indirect_credited_account if submitted else '' }}">
+          {% if result %}
+            {% if "indirect_credited_account" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Valeur de l'actif présentée (CHF)</th>
+        <td>
+          <label for="direct_presented_asset_value" class="visually-hidden">
+            Valeur de l'actif présentée — méthode directe
+          </label>
+          <input type="text" id="direct_presented_asset_value" name="direct_presented_asset_value"
+                 value="{{ submitted.direct_presented_asset_value if submitted else '' }}">
+          {% if result %}
+            {% if "direct_presented_asset_value" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+        <td>
+          <label for="indirect_acquisition_value_shown" class="visually-hidden">
+            Valeur de l'actif présentée — méthode indirecte
+          </label>
+          <input type="text" id="indirect_acquisition_value_shown"
+                 name="indirect_acquisition_value_shown"
+                 value="{{ submitted.indirect_acquisition_value_shown if submitted else '' }}">
+          {% if result %}
+            {% if "indirect_acquisition_value_shown" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Solde du compte d'ajustement de valeur (CHF)</th>
+        <td class="muted">— n'existe pas en méthode directe —</td>
+        <td>
+          <label for="indirect_adjustment_amount" class="visually-hidden">
+            Solde du compte d'ajustement de valeur — méthode indirecte
+          </label>
+          <input type="text" id="indirect_adjustment_amount" name="indirect_adjustment_amount"
+                 value="{{ submitted.indirect_adjustment_amount if submitted else '' }}">
+          {% if result %}
+            {% if "indirect_adjustment_amount" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Valeur comptable nette (CHF)</th>
+        <td>
+          <label for="direct_carrying_amount" class="visually-hidden">
+            Valeur comptable nette — méthode directe
+          </label>
+          <input type="text" id="direct_carrying_amount" name="direct_carrying_amount"
+                 value="{{ submitted.direct_carrying_amount if submitted else '' }}">
+          {% if result %}
+            {% if "direct_carrying_amount" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+        <td>
+          <label for="indirect_carrying_amount" class="visually-hidden">
+            Valeur comptable nette — méthode indirecte
+          </label>
+          <input type="text" id="indirect_carrying_amount" name="indirect_carrying_amount"
+                 value="{{ submitted.indirect_carrying_amount if submitted else '' }}">
+          {% if result %}
+            {% if "indirect_carrying_amount" in result.correct_components %}
+              <span class="cell-status correct-cell">correct</span>
+            {% else %}
+              <span class="cell-status incorrect-cell">incorrect</span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="submit">Vérifier ma comparaison</button>
+</form>
+
+<form method="post" action="/practice/depreciation/finish">
+  <button type="submit" class="secondary">Voir la correction complète</button>
+</form>
+
+{% endblock %}
